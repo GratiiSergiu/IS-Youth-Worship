@@ -1,7 +1,6 @@
 export default function Header() {
   return (
     <div className="px-4 pt-6 pb-2 flex items-center gap-3 select-none">
-      <img src="/logo.png" alt="ISYouth" className="w-10 h-10 rounded-xl object-contain bg-white/5 border border-slate-800" />
       <div>
         <h1 className="text-xl font-black tracking-tight leading-none">
           <span className="text-white">IS</span>
