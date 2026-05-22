@@ -52,15 +52,23 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
   const availableSongs = songs.filter((s) => !selectedSongs.some((item) => item.songId === s.id));
 
   if (viewingIndex !== null && selectedSongs[viewingIndex]) {
+    const item = selectedSongs[viewingIndex];
+    const masterSong = songs.find((s) => s.id === item.songId);
     return (
       <SongViewer
-        song={selectedSongs[viewingIndex]}
+        song={{
+          ...item,
+          id: item.songId,
+          versuri: masterSong?.versuri ?? item.versuri ?? '',
+        }}
         onClose={() => setViewingIndex(null)}
         onKeyChange={(newKey) => changeKey(viewingIndex, newKey)}
         onUpdate={(updated) => {
           onUpdateSong?.(updated);
           setSelectedSongs((prev) => prev.map((s) =>
-            s.songId === updated.id ? { ...s, titlu: updated.titlu, autor: updated.autor, versuri: updated.versuri, originalKey: updated.tonalitate } : s
+            s.songId === updated.id
+              ? { ...s, titlu: updated.titlu, autor: updated.autor, versuri: updated.versuri, originalKey: updated.tonalitate }
+              : s
           ));
         }}
         onNext={() => setViewingIndex((i) => Math.min(selectedSongs.length - 1, i + 1))}
