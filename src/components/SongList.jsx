@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Plus, X, Music2, Link, Loader2, ClipboardPaste } from 'lucide-react';
 import { fetchSongFromUrl, convertToOurFormat } from '../utils/import';
+import SongViewer from './SongViewer';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -9,6 +10,8 @@ export default function SongList({ songs, onAdd, onDelete }) {
   const [filterKey, setFilterKey] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+
+  const [viewingIndex, setViewingIndex] = useState(null);
 
   const [importUrl, setImportUrl] = useState('');
   const [importLoading, setImportLoading] = useState(false);
@@ -75,6 +78,20 @@ export default function SongList({ songs, onAdd, onDelete }) {
     setImportError('');
     setImportMode('manual');
   };
+
+  if (viewingIndex !== null && filtered[viewingIndex]) {
+    const song = filtered[viewingIndex];
+    return (
+      <SongViewer
+        song={{ ...song, originalKey: song.tonalitate, selectedKey: song.tonalitate }}
+        onClose={() => setViewingIndex(null)}
+        onNext={() => setViewingIndex((i) => Math.min(filtered.length - 1, i + 1))}
+        onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
+        hasNext={viewingIndex < filtered.length - 1}
+        hasPrev={viewingIndex > 0}
+      />
+    );
+  }
 
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
@@ -212,8 +229,12 @@ export default function SongList({ songs, onAdd, onDelete }) {
       </div>
 
       <div className="space-y-2.5">
-        {filtered.map((song) => (
-          <div key={song.id} className="bg-slate-900 rounded-xl p-4 border border-slate-800 flex items-start justify-between group active:scale-[0.98] transition-transform">
+        {filtered.map((song, index) => (
+          <div
+            key={song.id}
+            className="bg-slate-900 rounded-xl p-4 border border-slate-800 flex items-start justify-between group active:scale-[0.98] transition-transform cursor-pointer"
+            onClick={() => setViewingIndex(index)}
+          >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <Music2 size={16} className="text-yellow-500 shrink-0" />
@@ -225,7 +246,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
               </span>
             </div>
             <button
-              onClick={() => onDelete(song.id)}
+              onClick={(e) => { e.stopPropagation(); onDelete(song.id); }}
               className="text-slate-600 hover:text-red-400 p-2 -mr-2 -mt-2 opacity-0 group-hover:opacity-100 transition"
             >
               <X size={16} />

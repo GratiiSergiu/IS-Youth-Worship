@@ -1,7 +1,10 @@
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Music2, FileText } from 'lucide-react';
 import { getSemitonesBetween, transposeLyrics, renderLyrics } from '../utils/chords';
 
 export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, hasPrev }) {
+  const [showChords, setShowChords] = useState(true);
+
   const semitones = getSemitonesBetween(song.originalKey, song.selectedKey);
   const transposed = transposeLyrics(song.versuri, semitones);
   const lines = renderLyrics(transposed);
@@ -21,7 +24,13 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
             )}
           </div>
         </div>
-        <div className="w-10" />
+        <button
+          onClick={() => setShowChords((v) => !v)}
+          className={`p-2 -mr-2 rounded-lg transition ${showChords ? 'text-yellow-400' : 'text-slate-500'}`}
+          title={showChords ? 'Ascunde acorduri' : 'Arată acorduri'}
+        >
+          {showChords ? <Music2 size={20} /> : <FileText size={20} />}
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-8">
@@ -29,13 +38,14 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
           {lines.map((line) => (
             <div key={line.lineIndex} className="min-h-[1.6em]">
               {line.parts.length === 0 && <br />}
-              {line.parts.map((part, i) =>
-                part.type === 'chord' ? (
-                  <span key={i} className="text-yellow-400 font-bold">{part.content}</span>
-                ) : (
-                  <span key={i} className="text-white">{part.content}</span>
-                )
-              )}
+              {line.parts.map((part, i) => {
+                if (part.type === 'chord') {
+                  return showChords ? (
+                    <span key={i} className="text-yellow-400 font-bold">{part.content}</span>
+                  ) : null;
+                }
+                return <span key={i} className="text-white">{part.content}</span>;
+              })}
             </div>
           ))}
         </div>
