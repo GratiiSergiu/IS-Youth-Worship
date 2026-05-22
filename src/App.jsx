@@ -6,6 +6,7 @@ import BottomNav from './components/BottomNav';
 import Header from './components/Header';
 import SongList from './components/SongList';
 import SetlistPlanner from './components/SetlistPlanner';
+import Collections from './components/Collections';
 import Settings from './components/Settings';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
       { id: '2', eventName: 'Slujire Duminică', songs: [] },
     ];
   });
+  const [collections, setCollections] = useLocalStorage('isworship_collections', []);
   const { theme } = useSettings();
 
   // Normalize DB row (capitalized cols) → internal object (lowercase keys)
@@ -150,6 +152,14 @@ export default function App() {
               onAdd={handleAddSong}
               onDelete={handleDeleteSong}
               onUpdate={handleUpdateSong}
+            />
+          )}
+          {activeTab === 'colectii' && (
+            <Collections
+              songs={songs}
+              collections={collections}
+              onUpdateCollections={setCollections}
+              onUpdateSong={handleUpdateSong}
             />
           )}
           {activeTab === 'planificare' && (

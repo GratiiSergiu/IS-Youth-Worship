@@ -1,13 +1,19 @@
-import { Music, CalendarDays } from 'lucide-react';
+import { Music, CalendarDays, FolderOpen } from 'lucide-react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const tabs = [
-  { id: 'repertoriu', label: 'Repertoriu', icon: Music },
-  { id: 'planificare', label: 'Planificare', icon: CalendarDays },
+  { id: 'repertoriu',  label: 'Repertoriu',  icon: Music },
+  { id: 'planificare', label: 'Planificare',  icon: CalendarDays },
+  { id: 'colectii',   label: 'Colecții',     icon: FolderOpen },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }) {
+  const { theme } = useSettings();
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-50 pb-safe">
+    <nav
+      className="fixed bottom-0 left-0 right-0 backdrop-blur border-t z-50 pb-safe"
+      style={{ backgroundColor: theme.surface + 'f5', borderColor: theme.border }}
+    >
       <div className="flex justify-around items-center h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -16,9 +22,8 @@ export default function BottomNav({ activeTab, onTabChange }) {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-                isActive ? 'text-yellow-400' : 'text-slate-400'
-              }`}
+              className="flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors"
+              style={{ color: isActive ? theme.accent : theme.muted }}
             >
               <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               <span className="text-[10px] font-semibold uppercase tracking-wider">{tab.label}</span>
