@@ -26,6 +26,17 @@ function detectKey(versuri) {
   return FLAT_TO_SHARP[m[1]] || m[1];
 }
 
+// Returns the quality suffix of the first chord (m, dim, aug) — empty for major
+function detectKeyQuality(versuri) {
+  const m = versuri.match(/\[[A-G][#b]?([a-z]*)/);
+  if (!m || !m[1]) return '';
+  const q = m[1];
+  if (q === 'dim') return 'dim';
+  if (q === 'aug') return 'aug';
+  if (q.startsWith('m') && !q.startsWith('maj')) return 'm';
+  return '';
+}
+
 function buildChordRow(parts) {
   let row = '', textPos = 0;
   for (const p of parts) {
@@ -67,6 +78,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
   const [pageIndex, setPageIndex] = useState(0);
 
   const originalKey = song.originalKey || currentKey;
+  const keyQuality = useMemo(() => detectKeyQuality(song.versuri), [song.versuri]);
   const semitones = getSemitonesBetween(originalKey, currentKey);
   const transposed = transposeLyrics(editForm.versuri, semitones, currentKey);
   const lines = renderLyrics(transposed);
@@ -136,8 +148,8 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
                 <button onClick={() => setShowKeyPicker((v) => !v)}
                   className="mt-0.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full transition active:scale-95"
                   style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-                  <span className="font-mono text-xs font-bold" style={{ color: theme.accent }}>{currentKey}</span>
-                  {semitones !== 0 && <span className="text-[10px]" style={{ color: theme.muted }}>din {originalKey}</span>}
+                  <span className="font-mono text-xs font-bold" style={{ color: theme.accent }}>{currentKey}{keyQuality}</span>
+                  {semitones !== 0 && <span className="text-[10px]" style={{ color: theme.muted }}>din {originalKey}{keyQuality}</span>}
                   <span className="text-[9px]" style={{ color: theme.muted }}>{showKeyPicker ? '▲' : '▼'}</span>
                 </button>
 
