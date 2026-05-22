@@ -1,6 +1,12 @@
 const CHORD_TOKEN =
   /^[A-G][#b]?(m|maj|maj7|min|dim|aug|sus[24]?|add[0-9]+|[0-9]+)*(\/[A-G][#b]?)?$/;
 
+const FLAT_TO_SHARP = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
+
+function normalizeKey(note) {
+  return FLAT_TO_SHARP[note] || note;
+}
+
 function isChordLine(line) {
   const trimmed = line.trim();
   if (!trimmed) return false;
@@ -58,39 +64,89 @@ export function convertToOurFormat(text) {
 
 function detectKeyFromLyrics(lyrics) {
   const match = lyrics.match(/\[([A-G][#b]?)/);
-  return match ? match[1] : 'G';
+  if (!match) return 'G';
+  return normalizeKey(match[1]);
 }
 
-export async function fetchSongFromUrl(url) {
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
-  if (!res.ok) throw new Error('proxy_error');
-  const data = await res.json();
-  const html = data.contents;
-  if (!html) throw new Error('empty');
+// ─── melodia.ro parser ───────────────────────────────────────────────────────
+// Structure: <div class="with-chords verse">
+//   <div class="chord">Fm</div>"text node"<div class="chord">Db</div>"text"...<br>
+// </div>
+function parseMelodiaSection(sectionEl) {
+  const lines = [];
+  let currentLine = '';
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  for (const node of sectionEl.childNodes) {
+    if (node.nodeType === 1) {
+      // element node
+      const tag = node.tagName.toUpperCase();
+      if (node.classList.contains('chord')) {
+        currentLine += `[${node.textContent.trim()}]`;
+      } else if (tag === 'BR') {
+        lines.push(currentLine);
+        currentLine = '';
+      }
+    } else if (node.nodeType === 3) {
+      // text node
+      const text = node.textContent.replace(/\s+/g, ' ').trim();
+      if (text) currentLine += text;
+    }
+  }
+  if (currentLine.trim()) lines.push(currentLine);
+  return lines.join('\n');
+}
 
-  // Title
+function parseMelodiaRo(doc) {
+  const title =
+    doc.querySelector('h1')?.textContent?.trim() ||
+    doc.title.split(/[|\-–]/)[0].trim();
+
+  const author =
+    doc.querySelector('.artist, .author, .artist-name, [class*="artist"], [class*="author"]')
+      ?.textContent?.trim() || '';
+
+  const sections = Array.from(doc.querySelectorAll('[class*="with-chords"]'));
+  const sectionTexts = sections.map(parseMelodiaSection).filter(Boolean);
+  const lyrics = sectionTexts.join('\n\n');
+  const key = detectKeyFromLyrics(lyrics);
+
+  return { title, author, lyrics, key };
+}
+
+// ─── resursecrestine.ro parser ────────────────────────────────────────────────
+function parseResurseCrestine(doc) {
+  const title =
+    doc.querySelector('h1, .song-title, .entry-title')?.textContent?.trim() ||
+    doc.title.split(/[|\-–]/)[0].trim();
+
+  const author =
+    doc.querySelector('.author, .artist, .entry-author')?.textContent?.trim() || '';
+
+  const contentEl = doc.querySelector(
+    '.song-content, .entry-content, .lyrics, article, main'
+  );
+  const rawText = contentEl?.textContent || doc.body?.textContent || '';
+  const lyrics = convertToOurFormat(rawText.trim());
+  const key = detectKeyFromLyrics(lyrics);
+
+  return { title, author, lyrics, key };
+}
+
+// ─── generic fallback ─────────────────────────────────────────────────────────
+function parseGeneric(doc) {
   let title = doc.querySelector('h1')?.textContent?.trim() || '';
   if (!title) title = doc.title.split(/[|\-–]/)[0].trim();
 
-  // Author
-  let author = '';
-  const authorEl = doc.querySelector(
-    '.author, .artist, [itemprop="byArtist"], .song-author, .performer'
-  );
-  if (authorEl) author = authorEl.textContent.trim();
+  const author =
+    doc.querySelector('.author, .artist, [itemprop="byArtist"], .song-author, .performer')
+      ?.textContent?.trim() || '';
 
-  // Lyrics / chords content
   const selectors = [
     'pre',
     '.lyrics', '.chords', '.tab-content', '.song-text', '.song-content',
-    '[class*="lyric"]', '[class*="chord"]', '[class*="tab"]',
+    '[class*="lyric"]', '[class*="tab"]',
     'article', 'main',
   ];
-
   let rawText = '';
   for (const sel of selectors) {
     const el = doc.querySelector(sel);
@@ -105,4 +161,21 @@ export async function fetchSongFromUrl(url) {
   const key = detectKeyFromLyrics(lyrics);
 
   return { title, author, lyrics, key };
+}
+
+// ─── main export ──────────────────────────────────────────────────────────────
+export async function fetchSongFromUrl(url) {
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
+  if (!res.ok) throw new Error('proxy_error');
+  const data = await res.json();
+  const html = data.contents;
+  if (!html) throw new Error('empty');
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  if (url.includes('melodia.ro')) return parseMelodiaRo(doc);
+  if (url.includes('resursecrestine.ro')) return parseResurseCrestine(doc);
+  return parseGeneric(doc);
 }
