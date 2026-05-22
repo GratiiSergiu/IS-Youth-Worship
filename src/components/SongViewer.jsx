@@ -132,13 +132,35 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
           ) : (
             <>
               <h2 className="font-bold text-sm truncate" style={{ color: theme.text }}>{song.titlu}</h2>
-              <button onClick={() => setShowKeyPicker(true)}
-                className="mt-0.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full transition active:scale-95"
-                style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-                <span className="font-mono text-xs font-bold" style={{ color: theme.accent }}>{currentKey}</span>
-                {semitones !== 0 && <span className="text-[10px]" style={{ color: theme.muted }}>din {originalKey}</span>}
-                <span className="text-[9px]" style={{ color: theme.muted }}>▼</span>
-              </button>
+              <div className="relative inline-block">
+                <button onClick={() => setShowKeyPicker((v) => !v)}
+                  className="mt-0.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full transition active:scale-95"
+                  style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
+                  <span className="font-mono text-xs font-bold" style={{ color: theme.accent }}>{currentKey}</span>
+                  {semitones !== 0 && <span className="text-[10px]" style={{ color: theme.muted }}>din {originalKey}</span>}
+                  <span className="text-[9px]" style={{ color: theme.muted }}>{showKeyPicker ? '▲' : '▼'}</span>
+                </button>
+
+                {showKeyPicker && (
+                  <>
+                    <div className="fixed inset-0" style={{ zIndex: 55 }} onClick={() => setShowKeyPicker(false)} />
+                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 rounded-2xl border shadow-2xl p-3"
+                      style={{ top: '100%', zIndex: 60, backgroundColor: theme.surface, borderColor: theme.border, width: '220px' }}>
+                      <div className="grid grid-cols-3 gap-2">
+                        {KEYS.map(({ k, label }) => (
+                          <button key={k} onClick={() => handleKeySelect(k)}
+                            className="py-2.5 rounded-xl font-mono font-bold text-sm transition active:scale-95"
+                            style={k === currentKey
+                              ? { backgroundColor: theme.accent, color: theme.accentFg }
+                              : { backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -243,28 +265,6 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
         </div>
       )}
 
-      {/* Key picker */}
-      {showKeyPicker && (
-        <div className="fixed inset-0 bg-black/70 z-60 flex items-end" onClick={() => setShowKeyPicker(false)}>
-          <div className="w-full rounded-t-2xl p-5 border-t" onClick={(e) => e.stopPropagation()}
-            style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-            <p className="text-sm font-semibold text-center mb-4" style={{ color: theme.muted }}>
-              Selectează tonalitatea
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {KEYS.map(({ k, label }) => (
-                <button key={k} onClick={() => handleKeySelect(k)}
-                  className="py-3 rounded-xl font-mono font-bold text-base transition active:scale-95"
-                  style={k === currentKey
-                    ? { backgroundColor: theme.accent, color: theme.accentFg }
-                    : { backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
