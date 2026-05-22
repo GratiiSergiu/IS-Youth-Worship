@@ -41,22 +41,33 @@ export default function Settings({ onClose }) {
               </button>
             ))}
           </div>
-          {/* 5 palete */}
+          {/* 5 palete — gradient pills */}
           <div className="grid grid-cols-5 gap-2">
             {PALETTE_IDS.map((id) => {
               const active = settings.theme === id;
+              const t = THEMES[id];
               return (
                 <button key={id} onClick={() => update({ theme: id })}
-                  className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl transition active:scale-95"
+                  className="flex flex-col items-center gap-2 py-2 rounded-xl transition active:scale-95"
                   style={{
-                    backgroundColor: active ? theme.accent + '28' : THEMES[id].surface,
-                    border: `2px solid ${active ? theme.accent : THEMES[id].border}`,
+                    backgroundColor: active ? theme.accent + '22' : t.surface,
+                    border: `2px solid ${active ? theme.accent : t.border}`,
                   }}>
-                  <div className="w-7 h-7 rounded-full shadow-md"
-                    style={{ backgroundColor: THEMES[id].chord }} />
-                  <span className="text-[9px] font-medium leading-tight text-center"
-                    style={{ color: active ? theme.accent : THEMES[id].muted }}>
-                    {THEMES[id].name}
+                  {/* Gradient pill */}
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: 36,
+                      height: 64,
+                      background: `linear-gradient(to bottom, ${t.grad[0]}, ${t.grad[1]})`,
+                      boxShadow: active
+                        ? `0 0 14px 3px ${t.grad[1]}88`
+                        : `0 0 8px 1px ${t.grad[1]}44`,
+                    }}
+                  />
+                  <span className="text-[9px] font-semibold leading-tight text-center px-0.5"
+                    style={{ color: active ? theme.accent : t.muted }}>
+                    {t.name}
                   </span>
                 </button>
               );
