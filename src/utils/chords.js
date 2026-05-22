@@ -10,6 +10,49 @@ const SHARP_TO_FLAT = { 'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'B
 // Keys that conventionally use flat notation
 const FLAT_KEY_SET = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'A#', 'D#', 'G#', 'C#']);
 
+// Matches a single chord token (C, Gm, Bb, F#m7, Csus4, G/D, etc.)
+const CHORD_TOKEN_RE = /^[A-G][b#]?(m(aj7?|in7?)?|dim7?|aug|sus[24]?|add[2469]?|M7?|[0-9]+)*(\/[A-G][b#]?)?$/;
+
+function isChordToken(t) {
+  return CHORD_TOKEN_RE.test(t);
+}
+
+function isChordOnlyLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  return trimmed.split(/\s+/).every(isChordToken);
+}
+
+// Build parts by mapping chord column positions onto the lyric string.
+// The chord row positions are used as lyric character offsets so that
+// buildChordRow() will reproduce the original horizontal alignment.
+function buildPartsFromChordAboveLyric(chordLine, lyricLine) {
+  const entries = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(chordLine)) !== null) {
+    entries.push({ chord: m[0], pos: m.index });
+  }
+  if (!entries.length) return [];
+
+  const parts = [];
+  let lastPos = 0;
+
+  for (const { chord, pos } of entries) {
+    if (pos > lastPos) {
+      const slice = lyricLine.slice(lastPos, pos);
+      if (slice) parts.push({ type: 'text', content: slice });
+      lastPos = pos;
+    }
+    parts.push({ type: 'chord', content: chord });
+  }
+
+  const remaining = lyricLine.slice(lastPos);
+  if (remaining) parts.push({ type: 'text', content: remaining });
+
+  return parts;
+}
+
 export function normalizeNote(note) {
   if (!note) return 'C';
   const base = note.charAt(0).toUpperCase() + note.slice(1);
@@ -45,7 +88,29 @@ export function transposeLyrics(lyrics, semitones, targetKey = '') {
 }
 
 export function renderLyrics(lyrics) {
-  return lyrics.split('\n').map((line, i) => {
+  const rawLines = lyrics.split('\n');
+  const result = [];
+  let i = 0;
+
+  while (i < rawLines.length) {
+    const line = rawLines[i];
+
+    // Detect plain "chords above lyrics" format: a line with only chord tokens,
+    // no brackets, followed by a non-empty non-chord lyric line.
+    if (!line.includes('[') && isChordOnlyLine(line)) {
+      const nextIdx = i + 1;
+      if (nextIdx < rawLines.length) {
+        const nextLine = rawLines[nextIdx];
+        if (nextLine !== '' && !isChordOnlyLine(nextLine) && !nextLine.includes('[')) {
+          const parts = buildPartsFromChordAboveLyric(line, nextLine);
+          result.push({ lineIndex: result.length, parts });
+          i += 2;
+          continue;
+        }
+      }
+    }
+
+    // Normal [chord] bracket format
     const parts = [];
     let lastIndex = 0;
     const regex = /\[([^\]]+)\]/g;
@@ -60,8 +125,11 @@ export function renderLyrics(lyrics) {
     if (lastIndex < line.length) {
       parts.push({ type: 'text', content: line.slice(lastIndex) });
     }
-    return { lineIndex: i, parts };
-  });
+    result.push({ lineIndex: result.length, parts });
+    i++;
+  }
+
+  return result;
 }
 
 export function getSemitonesBetween(fromNote, toNote) {
