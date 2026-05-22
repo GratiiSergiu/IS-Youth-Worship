@@ -83,7 +83,7 @@ export default function Settings({ onClose }) {
           <div className="grid grid-cols-3 gap-2">
             {FONTS.map((f) => (
               <button key={f.id} onClick={() => update({ fontId: f.id })}
-                className="py-3.5 rounded-xl text-sm font-medium transition active:scale-95"
+                className="py-3 rounded-xl text-sm font-medium transition active:scale-95"
                 style={{ ...btn(settings.fontId === f.id), fontFamily: f.css }}>
                 {f.label}
               </button>

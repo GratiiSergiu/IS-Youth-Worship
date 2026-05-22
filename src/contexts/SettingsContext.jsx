@@ -12,9 +12,21 @@ export const THEMES = {
 };
 
 export const FONTS = [
-  { id: 'mono',  label: 'Mono',  css: "'Courier New', monospace" },
-  { id: 'sans',  label: 'Sans',  css: "system-ui, -apple-system, sans-serif" },
-  { id: 'serif', label: 'Serif', css: "Georgia, 'Times New Roman', serif" },
+  // Sans-serif
+  { id: 'calibri',   label: 'Calibri',   css: "'Calibri', 'Lato', system-ui, sans-serif" },
+  { id: 'arial',     label: 'Arial',     css: "'Arial', 'Helvetica Neue', sans-serif" },
+  { id: 'opensans',  label: 'Open Sans', css: "'Open Sans', system-ui, sans-serif" },
+  { id: 'verdana',   label: 'Verdana',   css: "'Verdana', Geneva, sans-serif" },
+  { id: 'trebuchet', label: 'Trebuchet', css: "'Trebuchet MS', sans-serif" },
+  { id: 'century',   label: 'Century',   css: "'Century Gothic', 'Futura', system-ui, sans-serif" },
+  // Serif
+  { id: 'georgia',   label: 'Georgia',   css: "Georgia, serif" },
+  { id: 'times',     label: 'Times NR',  css: "'Times New Roman', Times, serif" },
+  { id: 'palatino',  label: 'Palatino',  css: "'Palatino Linotype', 'Book Antiqua', Palatino, serif" },
+  { id: 'cambria',   label: 'Cambria',   css: "'Cambria', 'Merriweather', Georgia, serif" },
+  { id: 'garamond',  label: 'Garamond',  css: "'EB Garamond', Garamond, serif" },
+  // Mono
+  { id: 'mono',      label: 'Courier',   css: "'Courier New', Courier, monospace" },
 ];
 
 export const FONT_SIZES = [
