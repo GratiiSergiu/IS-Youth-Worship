@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight } from 'lucide-react';
 import SongViewer from './SongViewer';
 
-const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
 export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
   const [eventName, setEventName] = useState(setlist?.eventName || 'Tineret Marți');
   const [selectedSongs, setSelectedSongs] = useState(setlist?.songs || []);
@@ -58,6 +56,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
       <SongViewer
         song={selectedSongs[viewingIndex]}
         onClose={() => setViewingIndex(null)}
+        onKeyChange={(newKey) => changeKey(viewingIndex, newKey)}
         onNext={() => setViewingIndex((i) => Math.min(selectedSongs.length - 1, i + 1))}
         onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
         hasNext={viewingIndex < selectedSongs.length - 1}
@@ -133,18 +132,13 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-slate-500 font-medium">Tonalitate:</span>
-                <select
-                  value={item.selectedKey}
-                  onChange={(e) => changeKey(index, e.target.value)}
-                  className="bg-slate-800 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50 font-mono font-bold"
-                >
-                  {KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
-                </select>
-                <span className={`text-xs font-medium ${isOriginal ? 'text-slate-600' : 'text-rose-400'}`}>
-                  {isOriginal ? `Original: ${item.originalKey}` : `Transpus din ${item.originalKey}`}
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-slate-800 text-yellow-400 px-2.5 py-1 rounded-lg font-mono font-bold">
+                  {item.selectedKey}
                 </span>
+                {!isOriginal && (
+                  <span className="text-xs text-rose-400">transpus din {item.originalKey}</span>
+                )}
               </div>
             </div>
           );

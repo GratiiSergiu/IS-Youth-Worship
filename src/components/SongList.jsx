@@ -3,26 +3,28 @@ import { Search, Plus, X, Music2, Link, Loader2, ClipboardPaste } from 'lucide-r
 import { fetchSongFromUrl, convertToOurFormat } from '../utils/import';
 import SongViewer from './SongViewer';
 
-const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const FLAT_TO_SHARP = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
+
+function detectKey(versuri) {
+  const match = versuri.match(/\[([A-G][#b]?)/);
+  if (!match) return 'C';
+  return FLAT_TO_SHARP[match[1]] || match[1];
+}
 
 export default function SongList({ songs, onAdd, onDelete }) {
   const [search, setSearch] = useState('');
-  const [filterKey, setFilterKey] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
-
+  const [form, setForm] = useState({ titlu: '', autor: '', versuri: '' });
   const [viewingIndex, setViewingIndex] = useState(null);
 
   const [importUrl, setImportUrl] = useState('');
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState('');
-  const [importMode, setImportMode] = useState('manual'); // 'manual' | 'url'
+  const [importMode, setImportMode] = useState('manual');
 
   const filtered = songs.filter((s) => {
     const haystack = (s.titlu + ' ' + s.autor).toLowerCase();
-    const matchesSearch = haystack.includes(search.toLowerCase());
-    const matchesKey = filterKey ? s.tonalitate === filterKey : true;
-    return matchesSearch && matchesKey;
+    return haystack.includes(search.toLowerCase());
   });
 
   const handleSubmit = (e) => {
@@ -32,10 +34,10 @@ export default function SongList({ songs, onAdd, onDelete }) {
       id: crypto.randomUUID(),
       titlu: form.titlu.trim(),
       autor: form.autor.trim(),
-      tonalitate: form.tonalitate,
+      tonalitate: detectKey(form.versuri),
       versuri: form.versuri,
     });
-    setForm({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+    setForm({ titlu: '', autor: '', versuri: '' });
     setImportUrl('');
     setImportError('');
     setImportMode('manual');
@@ -51,7 +53,6 @@ export default function SongList({ songs, onAdd, onDelete }) {
       setForm({
         titlu: result.title,
         autor: result.author,
-        tonalitate: KEYS.includes(result.key) ? result.key : 'G',
         versuri: result.lyrics,
       });
       setImportUrl('');
@@ -73,7 +74,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
 
   const toggleForm = () => {
     setShowForm((v) => !v);
-    setForm({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+    setForm({ titlu: '', autor: '', versuri: '' });
     setImportUrl('');
     setImportError('');
     setImportMode('manual');
@@ -107,16 +108,13 @@ export default function SongList({ songs, onAdd, onDelete }) {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 space-y-3 shadow-xl">
-
           {/* Mode toggle */}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => { setImportMode('manual'); setImportError(''); }}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition ${
-                importMode === 'manual'
-                  ? 'bg-yellow-500 text-slate-950'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                importMode === 'manual' ? 'bg-yellow-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
               <ClipboardPaste size={14} /> Manual
@@ -125,22 +123,19 @@ export default function SongList({ songs, onAdd, onDelete }) {
               type="button"
               onClick={() => { setImportMode('url'); setImportError(''); }}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition ${
-                importMode === 'url'
-                  ? 'bg-yellow-500 text-slate-950'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                importMode === 'url' ? 'bg-yellow-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
               <Link size={14} /> Din link
             </button>
           </div>
 
-          {/* URL import */}
           {importMode === 'url' && (
             <div className="space-y-2">
               <div className="flex gap-2">
                 <input
                   type="url"
-                  placeholder="https://acorduri.ro/..."
+                  placeholder="https://melodia.ro/..."
                   className="flex-1 bg-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm"
                   value={importUrl}
                   onChange={(e) => setImportUrl(e.target.value)}
@@ -155,16 +150,11 @@ export default function SongList({ songs, onAdd, onDelete }) {
                   {importLoading ? <Loader2 size={16} className="animate-spin" /> : 'Preia'}
                 </button>
               </div>
-              {importError && (
-                <p className="text-rose-400 text-xs px-1">{importError}</p>
-              )}
-              {form.versuri && (
-                <p className="text-green-400 text-xs px-1">Conținut preluat — verifică și ajustează datele de mai jos.</p>
-              )}
+              {importError && <p className="text-rose-400 text-xs px-1">{importError}</p>}
+              {form.versuri && <p className="text-green-400 text-xs px-1">Conținut preluat — verifică și ajustează datele de mai jos.</p>}
             </div>
           )}
 
-          {/* Manual form fields */}
           <input
             type="text"
             placeholder="Titlu cântare"
@@ -180,13 +170,6 @@ export default function SongList({ songs, onAdd, onDelete }) {
             value={form.autor}
             onChange={(e) => setForm({ ...form, autor: e.target.value })}
           />
-          <select
-            className="w-full bg-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-            value={form.tonalitate}
-            onChange={(e) => setForm({ ...form, tonalitate: e.target.value })}
-          >
-            {KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
-          </select>
           <div>
             <textarea
               placeholder={"Versuri cu acorduri în paranteze pătrate\nEx: [G] Îți dăm glorie [C] și cinste\n\nPoți lipi text cu acorduri în orice format — se convertesc automat."}
@@ -198,7 +181,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
               required
             />
             <p className="text-[10px] text-slate-600 mt-1 px-1">
-              Paste direct: acordurile se convertesc automat din orice format.
+              Tonalitatea se detectează automat din primul acord.
             </p>
           </div>
           <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-3 rounded-xl active:scale-95 transition shadow-lg">
@@ -207,25 +190,15 @@ export default function SongList({ songs, onAdd, onDelete }) {
         </form>
       )}
 
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-          <input
-            type="text"
-            placeholder="Caută titlu sau autor..."
-            className="w-full bg-slate-900 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <select
-          className="bg-slate-900 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-          value={filterKey}
-          onChange={(e) => setFilterKey(e.target.value)}
-        >
-          <option value="">Toate</option>
-          {KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
-        </select>
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+        <input
+          type="text"
+          placeholder="Caută titlu sau autor..."
+          className="w-full bg-slate-900 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       <div className="space-y-2.5">
@@ -241,9 +214,11 @@ export default function SongList({ songs, onAdd, onDelete }) {
                 <h3 className="font-semibold text-white truncate">{song.titlu}</h3>
               </div>
               <p className="text-sm text-slate-400 mt-0.5">{song.autor || 'Fără autor'}</p>
-              <span className="inline-block mt-1.5 text-xs bg-slate-800 text-yellow-400 px-2 py-0.5 rounded-md font-mono font-bold tracking-wide">
-                {song.tonalitate}
-              </span>
+              {song.tonalitate && (
+                <span className="inline-block mt-1.5 text-xs bg-slate-800 text-yellow-400 px-2 py-0.5 rounded-md font-mono font-bold tracking-wide">
+                  {song.tonalitate}
+                </span>
+              )}
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(song.id); }}
