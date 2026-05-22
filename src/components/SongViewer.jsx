@@ -3,14 +3,20 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Music2, FileText, Pencil, Check, 
 import { getSemitonesBetween, transposeLyrics, renderLyrics } from '../utils/chords';
 import { useSettings } from '../contexts/SettingsContext';
 
-// All 17 keys — naturals, sharps and flats
+// 12 note cromatice cu ambele denumiri
 const KEYS = [
-  { k: 'C',  label: 'C'  }, { k: 'C#', label: 'C#' }, { k: 'Db', label: 'Db' },
-  { k: 'D',  label: 'D'  }, { k: 'D#', label: 'D#' }, { k: 'Eb', label: 'Eb' },
-  { k: 'E',  label: 'E'  }, { k: 'F',  label: 'F'  }, { k: 'F#', label: 'F#' },
-  { k: 'Gb', label: 'Gb' }, { k: 'G',  label: 'G'  }, { k: 'G#', label: 'G#' },
-  { k: 'Ab', label: 'Ab' }, { k: 'A',  label: 'A'  }, { k: 'A#', label: 'A#' },
-  { k: 'Bb', label: 'Bb' }, { k: 'B',  label: 'B'  },
+  { k: 'C',  label: 'C' },
+  { k: 'C#', label: 'C# / Db' },
+  { k: 'D',  label: 'D' },
+  { k: 'D#', label: 'D# / Eb' },
+  { k: 'E',  label: 'E' },
+  { k: 'F',  label: 'F' },
+  { k: 'F#', label: 'F# / Gb' },
+  { k: 'G',  label: 'G' },
+  { k: 'G#', label: 'G# / Ab' },
+  { k: 'A',  label: 'A' },
+  { k: 'A#', label: 'A# / Bb' },
+  { k: 'B',  label: 'B' },
 ];
 const FLAT_TO_SHARP = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
 
