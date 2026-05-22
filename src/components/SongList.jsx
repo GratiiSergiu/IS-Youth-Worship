@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, Plus, X, Music2 } from 'lucide-react';
+import { Search, Plus, X, Music2, Link, Loader2, ClipboardPaste } from 'lucide-react';
+import { fetchSongFromUrl, convertToOurFormat } from '../utils/import';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -8,6 +9,11 @@ export default function SongList({ songs, onAdd, onDelete }) {
   const [filterKey, setFilterKey] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+
+  const [importUrl, setImportUrl] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState('');
+  const [importMode, setImportMode] = useState('manual'); // 'manual' | 'url'
 
   const filtered = songs.filter((s) => {
     const haystack = (s.titlu + ' ' + s.autor).toLowerCase();
@@ -27,7 +33,47 @@ export default function SongList({ songs, onAdd, onDelete }) {
       versuri: form.versuri,
     });
     setForm({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+    setImportUrl('');
+    setImportError('');
+    setImportMode('manual');
     setShowForm(false);
+  };
+
+  const handleImportUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImportLoading(true);
+    setImportError('');
+    try {
+      const result = await fetchSongFromUrl(importUrl.trim());
+      setForm({
+        titlu: result.title,
+        autor: result.author,
+        tonalitate: KEYS.includes(result.key) ? result.key : 'G',
+        versuri: result.lyrics,
+      });
+      setImportUrl('');
+    } catch {
+      setImportError('Nu s-a putut prelua. Încearcă să copiezi textul manual în câmpul de versuri.');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleVersuriPaste = (e) => {
+    const pasted = e.clipboardData.getData('text');
+    const converted = convertToOurFormat(pasted);
+    if (converted !== pasted) {
+      e.preventDefault();
+      setForm((f) => ({ ...f, versuri: converted }));
+    }
+  };
+
+  const toggleForm = () => {
+    setShowForm((v) => !v);
+    setForm({ titlu: '', autor: '', tonalitate: 'G', versuri: '' });
+    setImportUrl('');
+    setImportError('');
+    setImportMode('manual');
   };
 
   return (
@@ -35,7 +81,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white">Repertoriu</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={toggleForm}
           className="bg-yellow-500 text-slate-950 p-2.5 rounded-full shadow-lg active:scale-90 transition-transform"
         >
           {showForm ? <X size={20} /> : <Plus size={20} />}
@@ -44,6 +90,64 @@ export default function SongList({ songs, onAdd, onDelete }) {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-slate-900 rounded-2xl p-4 mb-4 border border-slate-800 space-y-3 shadow-xl">
+
+          {/* Mode toggle */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setImportMode('manual'); setImportError(''); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition ${
+                importMode === 'manual'
+                  ? 'bg-yellow-500 text-slate-950'
+                  : 'bg-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              <ClipboardPaste size={14} /> Manual
+            </button>
+            <button
+              type="button"
+              onClick={() => { setImportMode('url'); setImportError(''); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition ${
+                importMode === 'url'
+                  ? 'bg-yellow-500 text-slate-950'
+                  : 'bg-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              <Link size={14} /> Din link
+            </button>
+          </div>
+
+          {/* URL import */}
+          {importMode === 'url' && (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://acorduri.ro/..."
+                  className="flex-1 bg-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleImportUrl())}
+                />
+                <button
+                  type="button"
+                  onClick={handleImportUrl}
+                  disabled={importLoading || !importUrl.trim()}
+                  className="bg-yellow-500 disabled:opacity-50 text-slate-950 px-4 rounded-xl font-bold text-sm active:scale-95 transition flex items-center gap-1.5"
+                >
+                  {importLoading ? <Loader2 size={16} className="animate-spin" /> : 'Preia'}
+                </button>
+              </div>
+              {importError && (
+                <p className="text-rose-400 text-xs px-1">{importError}</p>
+              )}
+              {form.versuri && (
+                <p className="text-green-400 text-xs px-1">Conținut preluat — verifică și ajustează datele de mai jos.</p>
+              )}
+            </div>
+          )}
+
+          {/* Manual form fields */}
           <input
             type="text"
             placeholder="Titlu cântare"
@@ -66,14 +170,20 @@ export default function SongList({ songs, onAdd, onDelete }) {
           >
             {KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
           </select>
-          <textarea
-            placeholder="Versuri cu acorduri în paranteze pătrate&#10;Ex: [G] Îți dăm glorie [C] și cinste"
-            className="w-full bg-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 font-mono text-sm leading-relaxed"
-            rows={6}
-            value={form.versuri}
-            onChange={(e) => setForm({ ...form, versuri: e.target.value })}
-            required
-          />
+          <div>
+            <textarea
+              placeholder={"Versuri cu acorduri în paranteze pătrate\nEx: [G] Îți dăm glorie [C] și cinste\n\nPoți lipi text cu acorduri în orice format — se convertesc automat."}
+              className="w-full bg-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 font-mono text-sm leading-relaxed"
+              rows={6}
+              value={form.versuri}
+              onChange={(e) => setForm({ ...form, versuri: e.target.value })}
+              onPaste={handleVersuriPaste}
+              required
+            />
+            <p className="text-[10px] text-slate-600 mt-1 px-1">
+              Paste direct: acordurile se convertesc automat din orice format.
+            </p>
+          </div>
           <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-3 rounded-xl active:scale-95 transition shadow-lg">
             Salvează Cântarea
           </button>
