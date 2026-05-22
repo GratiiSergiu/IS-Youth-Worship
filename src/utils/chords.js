@@ -5,6 +5,11 @@ const FLAT_TO_SHARP = {
   'db': 'C#', 'eb': 'D#', 'gb': 'F#', 'ab': 'G#', 'bb': 'A#',
 };
 
+const SHARP_TO_FLAT = { 'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb' };
+
+// Keys that conventionally use flat notation
+const FLAT_KEY_SET = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'A#', 'D#', 'G#', 'C#']);
+
 export function normalizeNote(note) {
   if (!note) return 'C';
   const base = note.charAt(0).toUpperCase() + note.slice(1);
@@ -17,7 +22,7 @@ export function getNoteIndex(note) {
   return idx === -1 ? 0 : idx;
 }
 
-export function transposeChord(chord, semitones) {
+export function transposeChord(chord, semitones, useFlats = false) {
   const match = chord.match(/^([A-Ga-g])([#b♭]?)(.*)$/);
   if (!match) return chord;
   let [, root, accidental, suffix] = match;
@@ -26,14 +31,16 @@ export function transposeChord(chord, semitones) {
   const index = NOTES.indexOf(normalized);
   if (index === -1) return chord;
   const newIndex = (index + semitones + 12) % 12;
-  return NOTES[newIndex] + suffix;
+  const newNote = NOTES[newIndex];
+  const display = useFlats && SHARP_TO_FLAT[newNote] ? SHARP_TO_FLAT[newNote] : newNote;
+  return display + suffix;
 }
 
-export function transposeLyrics(lyrics, semitones) {
+export function transposeLyrics(lyrics, semitones, targetKey = '') {
   if (semitones === 0) return lyrics;
-  return lyrics.replace(/\[([^\]]+)\]/g, (match, chord) => {
-    const transposed = transposeChord(chord, semitones);
-    return '[' + transposed + ']';
+  const useFlats = FLAT_KEY_SET.has(normalizeNote(targetKey)) || targetKey.includes('b');
+  return lyrics.replace(/\[([^\]]+)\]/g, (_, chord) => {
+    return '[' + transposeChord(chord, semitones, useFlats) + ']';
   });
 }
 

@@ -3,7 +3,15 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Music2, FileText, Pencil, Check, 
 import { getSemitonesBetween, transposeLyrics, renderLyrics } from '../utils/chords';
 import { useSettings } from '../contexts/SettingsContext';
 
-const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+// All 17 keys — naturals, sharps and flats
+const KEYS = [
+  { k: 'C',  label: 'C'  }, { k: 'C#', label: 'C#' }, { k: 'Db', label: 'Db' },
+  { k: 'D',  label: 'D'  }, { k: 'D#', label: 'D#' }, { k: 'Eb', label: 'Eb' },
+  { k: 'E',  label: 'E'  }, { k: 'F',  label: 'F'  }, { k: 'F#', label: 'F#' },
+  { k: 'Gb', label: 'Gb' }, { k: 'G',  label: 'G'  }, { k: 'G#', label: 'G#' },
+  { k: 'Ab', label: 'Ab' }, { k: 'A',  label: 'A'  }, { k: 'A#', label: 'A#' },
+  { k: 'Bb', label: 'Bb' }, { k: 'B',  label: 'B'  },
+];
 const FLAT_TO_SHARP = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
 
 function detectKey(versuri) {
@@ -54,7 +62,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
 
   const originalKey = song.originalKey || currentKey;
   const semitones = getSemitonesBetween(originalKey, currentKey);
-  const transposed = transposeLyrics(editForm.versuri, semitones);
+  const transposed = transposeLyrics(editForm.versuri, semitones, currentKey);
   const lines = renderLyrics(transposed);
   const sections = useMemo(() => splitIntoSections(lines), [lines]);
   const isPaged = settings.layout === 'paged';
@@ -237,14 +245,14 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
             <p className="text-sm font-semibold text-center mb-4" style={{ color: theme.muted }}>
               Selectează tonalitatea
             </p>
-            <div className="grid grid-cols-4 gap-2.5">
-              {KEYS.map((k) => (
+            <div className="grid grid-cols-3 gap-2">
+              {KEYS.map(({ k, label }) => (
                 <button key={k} onClick={() => handleKeySelect(k)}
-                  className="py-3.5 rounded-xl font-mono font-bold text-base transition active:scale-95"
+                  className="py-3 rounded-xl font-mono font-bold text-base transition active:scale-95"
                   style={k === currentKey
                     ? { backgroundColor: theme.accent, color: theme.accentFg }
                     : { backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-                  {k}
+                  {label}
                 </button>
               ))}
             </div>
