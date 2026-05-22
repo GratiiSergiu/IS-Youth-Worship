@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X } from 'lucide-react';
 import SongViewer from './SongViewer';
+import { useSettings } from '../contexts/SettingsContext';
 
 function genId() {
   return String(Date.now());
 }
 
 export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong }) {
+  const { theme } = useSettings();
   const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
   const [viewingIndex, setViewingIndex] = useState(null);
   const [addingEvent, setAddingEvent] = useState(false);
@@ -105,18 +107,19 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
           <div key={ev.id} className="relative shrink-0">
             <button
               onClick={() => { setActiveId(ev.id); setViewingIndex(null); }}
-              className={`px-3 py-1.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
-                ev.id === activeId
-                  ? 'bg-yellow-500 text-slate-950'
-                  : 'bg-slate-800 text-slate-300'
-              }`}
+              className="px-3 py-1.5 rounded-full text-sm font-semibold transition whitespace-nowrap"
+              style={ev.id === activeId
+                ? { backgroundColor: theme.accent, color: theme.accentFg }
+                : { backgroundColor: theme.surface, color: theme.muted, border: `1px solid ${theme.border}` }
+              }
             >
               {ev.eventName}
             </button>
             {setlists.length > 1 && ev.id === activeId && (
               <button
                 onClick={() => deleteEvent(ev.id)}
-                className="absolute -top-1.5 -right-1.5 bg-rose-600 rounded-full p-0.5 text-white"
+                className="absolute -top-1.5 -right-1.5 rounded-full p-0.5"
+                style={{ backgroundColor: '#e11d48', color: '#fff' }}
               >
                 <X size={10} />
               </button>
@@ -132,38 +135,42 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
               onChange={(e) => setNewEventName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') addEvent(); if (e.key === 'Escape') setAddingEvent(false); }}
               placeholder="Nume eveniment"
-              className="bg-slate-800 text-white text-sm px-2 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 w-36"
+              className="text-sm px-2 py-1 rounded-lg focus:outline-none w-36"
+              style={{ backgroundColor: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }}
             />
-            <button onClick={addEvent} className="text-yellow-500 font-bold text-sm px-2">OK</button>
-            <button onClick={() => setAddingEvent(false)} className="text-slate-500 text-sm px-1">✕</button>
+            <button onClick={addEvent} className="text-sm px-2 font-bold" style={{ color: theme.accent }}>OK</button>
+            <button onClick={() => setAddingEvent(false)} className="text-sm px-1" style={{ color: theme.muted }}>✕</button>
           </div>
         ) : (
           <button
             onClick={() => setAddingEvent(true)}
-            className="shrink-0 p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-yellow-500 transition"
+            className="shrink-0 p-1.5 rounded-full transition"
+            style={{ backgroundColor: theme.surface, color: theme.muted, border: `1px solid ${theme.border}` }}
           >
             <Plus size={16} />
           </button>
         )}
       </div>
 
-      {/* Event name editor */}
-      <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 mb-4 shadow-lg">
+      {/* Event card */}
+      <div className="rounded-2xl p-4 border mb-4 shadow-lg" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
         <div className="flex items-center gap-2 mb-4">
-          <Calendar size={16} className="text-yellow-500 shrink-0" />
+          <Calendar size={16} style={{ color: theme.accent }} className="shrink-0" />
           <input
             type="text"
             value={activeEvent?.eventName ?? ''}
             onChange={(e) => setEventName(e.target.value)}
-            className="bg-transparent text-white font-bold focus:outline-none w-full text-lg"
+            className="bg-transparent font-bold focus:outline-none w-full text-lg"
+            style={{ color: theme.text }}
           />
         </div>
 
-        <label className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1.5 block">
+        <label className="text-xs uppercase tracking-wider font-semibold mb-1.5 block" style={{ color: theme.muted }}>
           Adaugă din repertoriu
         </label>
         <select
-          className="w-full bg-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
+          className="w-full rounded-xl px-3 py-2.5 focus:outline-none"
+          style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
           onChange={(e) => { if (e.target.value) { addSong(e.target.value); e.target.value = ''; } }}
           defaultValue=""
         >
@@ -178,40 +185,37 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
       {/* Song list */}
       <div className="space-y-2.5 mb-6">
         {selectedSongs.length === 0 && (
-          <div className="text-center py-8 border-2 border-dashed border-slate-800 rounded-2xl">
-            <ListMusic size={32} className="text-slate-700 mx-auto mb-2" />
-            <p className="text-slate-500 text-sm">Nicio piesă în program.<br />Adaugă din repertoriu.</p>
+          <div className="text-center py-8 border-2 border-dashed rounded-2xl" style={{ borderColor: theme.border }}>
+            <ListMusic size={32} className="mx-auto mb-2" style={{ color: theme.border }} />
+            <p className="text-sm" style={{ color: theme.muted }}>Nicio piesă în program.<br />Adaugă din repertoriu.</p>
           </div>
         )}
         {selectedSongs.map((item, index) => {
           const isOriginal = item.selectedKey === item.originalKey;
           return (
-            <div key={index} className="bg-slate-900 rounded-xl p-3 border border-slate-800 shadow-sm">
+            <div key={index} className="rounded-xl p-3 border shadow-sm" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-slate-500 font-bold shrink-0">#{index + 1}</span>
-                <span className="bg-slate-800 text-yellow-400 px-2.5 py-1 rounded-lg font-mono font-bold text-base shrink-0">
+                <span className="text-sm font-mono font-bold shrink-0" style={{ color: theme.muted }}>#{index + 1}</span>
+                <span className="px-2.5 py-1 rounded-lg font-mono font-bold text-base shrink-0" style={{ backgroundColor: theme.bg, color: theme.chord }}>
                   {item.selectedKey}
                 </span>
                 {!isOriginal && (
-                  <span className="text-xs text-rose-400 shrink-0">→{item.originalKey}</span>
+                  <span className="text-xs shrink-0" style={{ color: '#fb7185' }}>→{item.originalKey}</span>
                 )}
-                <button
-                  className="flex-1 min-w-0 text-left"
-                  onClick={() => setViewingIndex(index)}
-                >
+                <button className="flex-1 min-w-0 text-left" onClick={() => setViewingIndex(index)}>
                   <div className="flex items-center gap-1">
-                    <h3 className="font-bold text-white truncate">{item.titlu}</h3>
-                    <ChevronRight size={14} className="text-slate-600 shrink-0" />
+                    <h3 className="font-bold truncate" style={{ color: theme.text }}>{item.titlu}</h3>
+                    <ChevronRight size={14} className="shrink-0" style={{ color: theme.muted }} />
                   </div>
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => moveSong(index, -1)} className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg active:scale-90 transition">
+                  <button onClick={() => moveSong(index, -1)} className="p-1.5 rounded-lg active:scale-90 transition" style={{ backgroundColor: theme.bg, color: theme.muted }}>
                     <ArrowUp size={14} />
                   </button>
-                  <button onClick={() => moveSong(index, 1)} className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg active:scale-90 transition">
+                  <button onClick={() => moveSong(index, 1)} className="p-1.5 rounded-lg active:scale-90 transition" style={{ backgroundColor: theme.bg, color: theme.muted }}>
                     <ArrowDown size={14} />
                   </button>
-                  <button onClick={() => removeSong(index)} className="p-1.5 text-slate-400 hover:text-red-400 bg-slate-800 rounded-lg active:scale-90 transition">
+                  <button onClick={() => removeSong(index)} className="p-1.5 rounded-lg active:scale-90 transition" style={{ backgroundColor: theme.bg, color: theme.muted }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -223,7 +227,8 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
 
       <button
         onClick={() => alert('Program salvat!')}
-        className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
+        className="w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
+        style={{ backgroundColor: theme.accent, color: theme.accentFg }}
       >
         <Save size={18} />
         Salvează Programul
