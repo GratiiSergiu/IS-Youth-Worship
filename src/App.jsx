@@ -20,16 +20,33 @@ export default function App() {
   });
   const { theme } = useSettings();
 
+  // Normalize DB row (capitalized cols) → internal object (lowercase keys)
+  const fromDb = (row) => ({
+    id: row.id,
+    titlu: row['Titlu'] ?? '',
+    autor: row['Autor'] ?? '',
+    tonalitate: row['Tonalitate'] ?? 'C',
+    versuri: row['Versuri'] ?? '',
+  });
+
+  // Map internal object → DB columns
+  const toDb = ({ titlu, autor, tonalitate, versuri }) => ({
+    Titlu: titlu ?? '',
+    Autor: autor ?? '',
+    Tonalitate: tonalitate ?? 'C',
+    Versuri: versuri ?? '',
+  });
+
   // ── Fetch all songs from Supabase ──────────────────────────────────────────
   const fetchSongs = useCallback(async () => {
     const { data, error } = await supabase
       .from('Cântări')
       .select('*')
-      .order('titlu', { ascending: true });
+      .order('Titlu', { ascending: true });
     if (error) {
       setDbError(error.message);
     } else {
-      setSongs(data ?? []);
+      setSongs((data ?? []).map(fromDb));
       setDbError(null);
     }
     setLoading(false);
@@ -46,12 +63,7 @@ export default function App() {
         localStorage.removeItem('isworship_songs');
         return;
       }
-      const rows = local.map(({ titlu, autor, tonalitate, versuri }) => ({
-        titlu: titlu ?? '',
-        autor: autor ?? '',
-        tonalitate: tonalitate ?? 'C',
-        versuri: versuri ?? '',
-      }));
+      const rows = local.map(toDb);
       const { error } = await supabase.from('Cântări').insert(rows);
       if (!error) {
         localStorage.removeItem('isworship_songs');
@@ -75,14 +87,13 @@ export default function App() {
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────
   const handleAddSong = async (song) => {
-    const { titlu, autor, tonalitate, versuri } = song;
     const { data, error } = await supabase
       .from('Cântări')
-      .insert({ titlu, autor, tonalitate, versuri })
+      .insert(toDb(song))
       .select()
       .single();
     if (error) { setDbError(error.message); return; }
-    if (data) setSongs((prev) => [...prev, data]);
+    if (data) setSongs((prev) => [...prev, fromDb(data)]);
   };
 
   const handleDeleteSong = async (id) => {
@@ -92,15 +103,15 @@ export default function App() {
   };
 
   const handleUpdateSong = async (updated) => {
-    const { id, titlu, autor, tonalitate, versuri } = updated;
+    const { id } = updated;
     const { data, error } = await supabase
       .from('Cântări')
-      .update({ titlu, autor, tonalitate, versuri })
+      .update(toDb(updated))
       .eq('id', id)
       .select()
       .single();
     if (error) { setDbError(error.message); return; }
-    if (data) setSongs((prev) => prev.map((s) => s.id === id ? data : s));
+    if (data) setSongs((prev) => prev.map((s) => s.id === id ? fromDb(data) : s));
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
