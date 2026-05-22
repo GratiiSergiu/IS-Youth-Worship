@@ -23,7 +23,7 @@ export default function App() {
   // ── Fetch all songs from Supabase ──────────────────────────────────────────
   const fetchSongs = useCallback(async () => {
     const { data, error } = await supabase
-      .from('cantari')
+      .from('Cântări')
       .select('*')
       .order('titlu', { ascending: true });
     if (error) {
@@ -52,7 +52,7 @@ export default function App() {
         tonalitate: tonalitate ?? 'C',
         versuri: versuri ?? '',
       }));
-      const { error } = await supabase.from('cantari').insert(rows);
+      const { error } = await supabase.from('Cântări').insert(rows);
       if (!error) {
         localStorage.removeItem('isworship_songs');
         fetchSongs();
@@ -67,7 +67,7 @@ export default function App() {
 
     const channel = supabase
       .channel('cantari-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'cantari' }, fetchSongs)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Cântări' }, fetchSongs)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -77,7 +77,7 @@ export default function App() {
   const handleAddSong = async (song) => {
     const { titlu, autor, tonalitate, versuri } = song;
     const { data, error } = await supabase
-      .from('cantari')
+      .from('Cântări')
       .insert({ titlu, autor, tonalitate, versuri })
       .select()
       .single();
@@ -86,7 +86,7 @@ export default function App() {
   };
 
   const handleDeleteSong = async (id) => {
-    const { error } = await supabase.from('cantari').delete().eq('id', id);
+    const { error } = await supabase.from('Cântări').delete().eq('id', id);
     if (error) { setDbError(error.message); return; }
     setSongs((prev) => prev.filter((s) => s.id !== id));
   };
@@ -94,7 +94,7 @@ export default function App() {
   const handleUpdateSong = async (updated) => {
     const { id, titlu, autor, tonalitate, versuri } = updated;
     const { data, error } = await supabase
-      .from('cantari')
+      .from('Cântări')
       .update({ titlu, autor, tonalitate, versuri })
       .eq('id', id)
       .select()
