@@ -121,19 +121,24 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
           const isOriginal = item.selectedKey === item.originalKey;
           return (
             <div key={index} className="bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono text-slate-500 font-bold shrink-0">#{index + 1}</span>
+                <span className="bg-slate-800 text-yellow-400 px-2.5 py-1 rounded-lg font-mono font-bold text-base shrink-0">
+                  {item.selectedKey}
+                </span>
+                {!isOriginal && (
+                  <span className="text-xs text-rose-400 shrink-0">→{item.originalKey}</span>
+                )}
                 <button
-                  className="flex-1 min-w-0 pr-2 text-left"
+                  className="flex-1 min-w-0 text-left"
                   onClick={() => setViewingIndex(index)}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-slate-600 font-bold">#{index + 1}</span>
+                  <div className="flex items-center gap-1">
                     <h3 className="font-bold text-white truncate">{item.titlu}</h3>
                     <ChevronRight size={14} className="text-slate-600 shrink-0" />
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5 pl-6">{item.autor}</p>
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => moveSong(index, -1)} className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg active:scale-90 transition">
                     <ArrowUp size={14} />
                   </button>
@@ -144,15 +149,6 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
                     <Trash2 size={14} />
                   </button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-slate-800 text-yellow-400 px-2.5 py-1 rounded-lg font-mono font-bold">
-                  {item.selectedKey}
-                </span>
-                {!isOriginal && (
-                  <span className="text-xs text-rose-400">transpus din {item.originalKey}</span>
-                )}
               </div>
             </div>
           );
