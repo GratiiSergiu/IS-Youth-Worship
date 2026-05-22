@@ -14,9 +14,20 @@ export default function App() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dbError, setDbError] = useState(null);
-  const [setlist, setSetlist] = useLocalStorage('isworship_setlist', {
-    eventName: 'Tineret Marți',
-    songs: [],
+  const [setlists, setSetlists] = useLocalStorage('isworship_setlists', () => {
+    // Migrate old single-setlist format
+    const old = localStorage.getItem('isworship_setlist');
+    if (old) {
+      try {
+        const parsed = JSON.parse(old);
+        localStorage.removeItem('isworship_setlist');
+        return [{ id: '1', eventName: parsed.eventName || 'Tineret Marți', songs: parsed.songs || [] }];
+      } catch { /* ignore */ }
+    }
+    return [
+      { id: '1', eventName: 'Tineret Marți', songs: [] },
+      { id: '2', eventName: 'Slujire Duminică', songs: [] },
+    ];
   });
   const { theme } = useSettings();
 
@@ -144,8 +155,8 @@ export default function App() {
           {activeTab === 'planificare' && (
             <SetlistPlanner
               songs={songs}
-              setlist={setlist}
-              onUpdateSetlist={setSetlist}
+              setlists={setlists}
+              onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
             />
           )}

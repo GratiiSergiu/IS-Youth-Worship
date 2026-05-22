@@ -1,18 +1,48 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X } from 'lucide-react';
 import SongViewer from './SongViewer';
 
-export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpdateSong }) {
-  const [eventName, setEventName] = useState(setlist?.eventName || 'Tineret Marți');
-  const [selectedSongs, setSelectedSongs] = useState(setlist?.songs || []);
+function genId() {
+  return String(Date.now());
+}
+
+export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong }) {
+  const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
   const [viewingIndex, setViewingIndex] = useState(null);
+  const [addingEvent, setAddingEvent] = useState(false);
+  const [newEventName, setNewEventName] = useState('');
+
+  const activeEvent = setlists.find((e) => e.id === activeId) ?? setlists[0];
+  const selectedSongs = activeEvent?.songs ?? [];
+
+  const updateActive = (patch) => {
+    onUpdateSetlists(setlists.map((e) => e.id === activeEvent.id ? { ...e, ...patch } : e));
+  };
+
+  const setEventSongs = (songs) => updateActive({ songs });
+  const setEventName = (eventName) => updateActive({ eventName });
+
+  const addEvent = () => {
+    const name = newEventName.trim() || 'Eveniment nou';
+    const ev = { id: genId(), eventName: name, songs: [] };
+    onUpdateSetlists([...setlists, ev]);
+    setActiveId(ev.id);
+    setNewEventName('');
+    setAddingEvent(false);
+  };
+
+  const deleteEvent = (id) => {
+    if (setlists.length <= 1) return;
+    const remaining = setlists.filter((e) => e.id !== id);
+    onUpdateSetlists(remaining);
+    if (activeId === id) setActiveId(remaining[0].id);
+  };
 
   const addSong = (songId) => {
     const song = songs.find((s) => s.id === songId);
     if (!song) return;
-    const exists = selectedSongs.some((item) => item.songId === song.id);
-    if (exists) return;
-    setSelectedSongs((prev) => [...prev, {
+    if (selectedSongs.some((item) => item.songId === song.id)) return;
+    setEventSongs([...selectedSongs, {
       songId: song.id,
       titlu: song.titlu,
       autor: song.autor,
@@ -23,30 +53,21 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
   };
 
   const moveSong = (index, direction) => {
-    setSelectedSongs((prev) => {
-      const target = index + direction;
-      if (target < 0 || target >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+    const target = index + direction;
+    if (target < 0 || target >= selectedSongs.length) return;
+    const next = [...selectedSongs];
+    [next[index], next[target]] = [next[target], next[index]];
+    setEventSongs(next);
   };
 
   const removeSong = (index) => {
-    setSelectedSongs((prev) => prev.filter((_, i) => i !== index));
+    setEventSongs(selectedSongs.filter((_, i) => i !== index));
   };
 
   const changeKey = (index, newKey) => {
-    setSelectedSongs((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], selectedKey: newKey };
-      return next;
-    });
-  };
-
-  const saveSetlist = () => {
-    onUpdateSetlist({ eventName, songs: selectedSongs });
-    alert('Program salvat cu succes!');
+    const next = [...selectedSongs];
+    next[index] = { ...next[index], selectedKey: newKey };
+    setEventSongs(next);
   };
 
   const availableSongs = songs.filter((s) => !selectedSongs.some((item) => item.songId === s.id));
@@ -56,16 +77,12 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
     const masterSong = songs.find((s) => s.id === item.songId);
     return (
       <SongViewer
-        song={{
-          ...item,
-          id: item.songId,
-          versuri: masterSong?.versuri ?? item.versuri ?? '',
-        }}
+        song={{ ...item, id: item.songId, versuri: masterSong?.versuri ?? item.versuri ?? '' }}
         onClose={() => setViewingIndex(null)}
         onKeyChange={(newKey) => changeKey(viewingIndex, newKey)}
         onUpdate={(updated) => {
           onUpdateSong?.(updated);
-          setSelectedSongs((prev) => prev.map((s) =>
+          setEventSongs(selectedSongs.map((s) =>
             s.songId === updated.id
               ? { ...s, titlu: updated.titlu, autor: updated.autor, versuri: updated.versuri, originalKey: updated.tonalitate }
               : s
@@ -81,14 +98,62 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
 
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-white mb-4">Planificare</h2>
 
+      {/* Event tabs */}
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
+        {setlists.map((ev) => (
+          <div key={ev.id} className="relative shrink-0">
+            <button
+              onClick={() => { setActiveId(ev.id); setViewingIndex(null); }}
+              className={`px-3 py-1.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+                ev.id === activeId
+                  ? 'bg-yellow-500 text-slate-950'
+                  : 'bg-slate-800 text-slate-300'
+              }`}
+            >
+              {ev.eventName}
+            </button>
+            {setlists.length > 1 && ev.id === activeId && (
+              <button
+                onClick={() => deleteEvent(ev.id)}
+                className="absolute -top-1.5 -right-1.5 bg-rose-600 rounded-full p-0.5 text-white"
+              >
+                <X size={10} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        {addingEvent ? (
+          <div className="flex items-center gap-1 shrink-0">
+            <input
+              autoFocus
+              value={newEventName}
+              onChange={(e) => setNewEventName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') addEvent(); if (e.key === 'Escape') setAddingEvent(false); }}
+              placeholder="Nume eveniment"
+              className="bg-slate-800 text-white text-sm px-2 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 w-36"
+            />
+            <button onClick={addEvent} className="text-yellow-500 font-bold text-sm px-2">OK</button>
+            <button onClick={() => setAddingEvent(false)} className="text-slate-500 text-sm px-1">✕</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAddingEvent(true)}
+            className="shrink-0 p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-yellow-500 transition"
+          >
+            <Plus size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* Event name editor */}
       <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 mb-4 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
           <Calendar size={16} className="text-yellow-500 shrink-0" />
           <input
             type="text"
-            value={eventName}
+            value={activeEvent?.eventName ?? ''}
             onChange={(e) => setEventName(e.target.value)}
             className="bg-transparent text-white font-bold focus:outline-none w-full text-lg"
           />
@@ -110,6 +175,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
         </select>
       </div>
 
+      {/* Song list */}
       <div className="space-y-2.5 mb-6">
         {selectedSongs.length === 0 && (
           <div className="text-center py-8 border-2 border-dashed border-slate-800 rounded-2xl">
@@ -120,7 +186,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
         {selectedSongs.map((item, index) => {
           const isOriginal = item.selectedKey === item.originalKey;
           return (
-            <div key={index} className="bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-sm">
+            <div key={index} className="bg-slate-900 rounded-xl p-3 border border-slate-800 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-slate-500 font-bold shrink-0">#{index + 1}</span>
                 <span className="bg-slate-800 text-yellow-400 px-2.5 py-1 rounded-lg font-mono font-bold text-base shrink-0">
@@ -156,7 +222,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpda
       </div>
 
       <button
-        onClick={saveSetlist}
+        onClick={() => alert('Program salvat!')}
         className="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
       >
         <Save size={18} />
