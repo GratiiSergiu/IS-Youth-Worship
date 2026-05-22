@@ -11,7 +11,7 @@ function detectKey(versuri) {
   return FLAT_TO_SHARP[match[1]] || match[1];
 }
 
-export default function SongList({ songs, onAdd, onDelete }) {
+export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ titlu: '', autor: '', versuri: '' });
@@ -90,6 +90,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
         onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
         hasNext={viewingIndex < filtered.length - 1}
         hasPrev={viewingIndex > 0}
+        onUpdate={onUpdate}
       />
     );
   }

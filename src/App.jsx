@@ -13,6 +13,10 @@ export default function App() {
     songs: [],
   });
 
+  const handleUpdateSong = (updated) => {
+    setSongs((prev) => prev.map((s) => s.id === updated.id ? { ...s, ...updated } : s));
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-yellow-500/30">
       <Header />
@@ -21,6 +25,7 @@ export default function App() {
           songs={songs}
           onAdd={(song) => setSongs((prev) => [...prev, song])}
           onDelete={(id) => setSongs((prev) => prev.filter((s) => s.id !== id))}
+          onUpdate={handleUpdateSong}
         />
       )}
       {activeTab === 'planificare' && (
@@ -28,6 +33,7 @@ export default function App() {
           songs={songs}
           setlist={setlist}
           onUpdateSetlist={setSetlist}
+          onUpdateSong={handleUpdateSong}
         />
       )}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />

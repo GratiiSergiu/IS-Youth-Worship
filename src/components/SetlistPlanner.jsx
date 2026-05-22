@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight } from 'lucide-react';
 import SongViewer from './SongViewer';
 
-export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
+export default function SetlistPlanner({ songs, setlist, onUpdateSetlist, onUpdateSong }) {
   const [eventName, setEventName] = useState(setlist?.eventName || 'Tineret Marți');
   const [selectedSongs, setSelectedSongs] = useState(setlist?.songs || []);
   const [viewingIndex, setViewingIndex] = useState(null);
@@ -57,6 +57,12 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
         song={selectedSongs[viewingIndex]}
         onClose={() => setViewingIndex(null)}
         onKeyChange={(newKey) => changeKey(viewingIndex, newKey)}
+        onUpdate={(updated) => {
+          onUpdateSong?.(updated);
+          setSelectedSongs((prev) => prev.map((s) =>
+            s.songId === updated.id ? { ...s, titlu: updated.titlu, autor: updated.autor, versuri: updated.versuri, originalKey: updated.tonalitate } : s
+          ));
+        }}
         onNext={() => setViewingIndex((i) => Math.min(selectedSongs.length - 1, i + 1))}
         onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
         hasNext={viewingIndex < selectedSongs.length - 1}
