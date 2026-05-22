@@ -22,7 +22,7 @@ export default function App() {
 
   // Normalize DB row (capitalized cols) → internal object (lowercase keys)
   const fromDb = (row) => ({
-    id: row.id,
+    id: String(row.id),
     titlu: row['Titlu'] ?? '',
     autor: row['Autor'] ?? '',
     tonalitate: row['Tonalitate'] ?? 'C',
