@@ -19,6 +19,33 @@ export default function App() {
   });
   const { theme } = useSettings();
 
+  // ── One-time migration: localStorage → Supabase ───────────────────────────
+  useEffect(() => {
+    const migrate = async () => {
+      const raw = localStorage.getItem('isworship_songs');
+      if (!raw) return;
+      let local = [];
+      try { local = JSON.parse(raw); } catch { return; }
+      if (!Array.isArray(local) || local.length === 0) {
+        localStorage.removeItem('isworship_songs');
+        return;
+      }
+      const rows = local.map(({ titlu, autor, tonalitate, versuri }) => ({
+        titlu: titlu ?? '',
+        autor: autor ?? '',
+        tonalitate: tonalitate ?? 'C',
+        versuri: versuri ?? '',
+      }));
+      const { error } = await supabase.from('cantari').insert(rows);
+      if (!error) {
+        localStorage.removeItem('isworship_songs');
+        fetchSongs();
+      }
+    };
+    migrate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Fetch all songs from Supabase ──────────────────────────────────────────
   const fetchSongs = useCallback(async () => {
     const { data, error } = await supabase
