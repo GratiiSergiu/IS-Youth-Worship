@@ -40,7 +40,7 @@ export default function App() {
   // ── Fetch all songs from Supabase ──────────────────────────────────────────
   const fetchSongs = useCallback(async () => {
     const { data, error } = await supabase
-      .from('Cântări')
+      .from('cantari')
       .select('*')
       .order('Titlu', { ascending: true });
     if (error) {
@@ -64,7 +64,7 @@ export default function App() {
         return;
       }
       const rows = local.map(toDb);
-      const { error } = await supabase.from('Cântări').insert(rows);
+      const { error } = await supabase.from('cantari').insert(rows);
       if (!error) {
         localStorage.removeItem('isworship_songs');
         fetchSongs();
@@ -79,7 +79,7 @@ export default function App() {
 
     const channel = supabase
       .channel('cantari-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Cântări' }, fetchSongs)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cantari' }, fetchSongs)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -88,7 +88,7 @@ export default function App() {
   // ── CRUD handlers ──────────────────────────────────────────────────────────
   const handleAddSong = async (song) => {
     const { data, error } = await supabase
-      .from('Cântări')
+      .from('cantari')
       .insert(toDb(song))
       .select()
       .single();
@@ -97,7 +97,7 @@ export default function App() {
   };
 
   const handleDeleteSong = async (id) => {
-    const { error } = await supabase.from('Cântări').delete().eq('id', id);
+    const { error } = await supabase.from('cantari').delete().eq('id', id);
     if (error) { setDbError(error.message); return; }
     setSongs((prev) => prev.filter((s) => s.id !== id));
   };
@@ -105,7 +105,7 @@ export default function App() {
   const handleUpdateSong = async (updated) => {
     const { id } = updated;
     const { data, error } = await supabase
-      .from('Cântări')
+      .from('cantari')
       .update(toDb(updated))
       .eq('id', id)
       .select()
