@@ -31,6 +31,43 @@ function mergeChordLineWithLyrics(chordLine, lyricLine) {
   return result;
 }
 
+// Parses lines where chords are embedded directly in text without delimiters
+// e.g. "EmNu voi uiCta miGnunea ce-ai fDăcut-o" → "[Em]Nu voi ui[C]ta mi[G]nunea ce-ai f[D]ăcut-o"
+const INLINE_CHORD_RE = /^([A-G][#b]?(maj7?|m(?:aj)?7?|min|dim7?|aug|sus[24]?|add\d+|\d+)?(\/[A-G][#b]?)?)/;
+
+function parseInlineChordsLine(line) {
+  let result = '';
+  let i = 0;
+  while (i < line.length) {
+    const ch = line[i];
+    const prev = i > 0 ? line[i - 1] : null;
+    // Try chord match at line start or right after a non-space character
+    if ('ABCDEFG'.includes(ch) && (prev === null || prev !== ' ')) {
+      const m = line.slice(i).match(INLINE_CHORD_RE);
+      if (m) {
+        result += `[${m[1]}]`;
+        i += m[1].length;
+        continue;
+      }
+    }
+    result += ch;
+    i++;
+  }
+  return result;
+}
+
+function looksLikeInlineChords(text) {
+  // At least 2 lines start directly with a chord-like pattern (no space before)
+  const lines = text.split('\n').filter((l) => l.trim());
+  let count = 0;
+  for (const line of lines) {
+    if (/^[A-G][#b]?(m(?:aj)?7?|7|dim|aug|sus[24]?)?[A-ZÀ-Ÿa-zà-ÿ]/.test(line.trim())) {
+      count++;
+    }
+  }
+  return count >= 2;
+}
+
 export function convertToOurFormat(text) {
   if (!text || !text.trim()) return text;
 
@@ -40,6 +77,11 @@ export function convertToOurFormat(text) {
   // (Chord) format → [Chord]
   if (/\([A-G][^)]{0,10}\)/.test(text)) {
     return text.replace(/\(([A-G][^)]{0,10})\)/g, '[$1]').trim();
+  }
+
+  // Inline embedded chords (e.g. melodia.ro copy-paste: "EmNu voi uiCta mi")
+  if (looksLikeInlineChords(text)) {
+    return text.split('\n').map(parseInlineChordsLine).join('\n').trim();
   }
 
   // Chords-above-lyrics format
