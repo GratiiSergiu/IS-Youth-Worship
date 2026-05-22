@@ -13,11 +13,27 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState(null);
   const [setlist, setSetlist] = useLocalStorage('isworship_setlist', {
     eventName: 'Tineret Marți',
     songs: [],
   });
   const { theme } = useSettings();
+
+  // ── Fetch all songs from Supabase ──────────────────────────────────────────
+  const fetchSongs = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('cantari')
+      .select('*')
+      .order('titlu', { ascending: true });
+    if (error) {
+      setDbError(error.message);
+    } else {
+      setSongs(data ?? []);
+      setDbError(null);
+    }
+    setLoading(false);
+  }, []);
 
   // ── One-time migration: localStorage → Supabase ───────────────────────────
   useEffect(() => {
@@ -46,20 +62,9 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Fetch all songs from Supabase ──────────────────────────────────────────
-  const fetchSongs = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('cantari')
-      .select('*')
-      .order('titlu', { ascending: true });
-    if (!error) setSongs(data ?? []);
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
     fetchSongs();
 
-    // Real-time subscription — changes on any device update all clients instantly
     const channel = supabase
       .channel('cantari-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cantari' }, fetchSongs)
@@ -76,12 +81,14 @@ export default function App() {
       .insert({ titlu, autor, tonalitate, versuri })
       .select()
       .single();
-    if (!error && data) setSongs((prev) => [...prev, data]);
+    if (error) { setDbError(error.message); return; }
+    if (data) setSongs((prev) => [...prev, data]);
   };
 
   const handleDeleteSong = async (id) => {
     const { error } = await supabase.from('cantari').delete().eq('id', id);
-    if (!error) setSongs((prev) => prev.filter((s) => s.id !== id));
+    if (error) { setDbError(error.message); return; }
+    setSongs((prev) => prev.filter((s) => s.id !== id));
   };
 
   const handleUpdateSong = async (updated) => {
@@ -92,13 +99,22 @@ export default function App() {
       .eq('id', id)
       .select()
       .single();
-    if (!error && data) setSongs((prev) => prev.map((s) => s.id === id ? data : s));
+    if (error) { setDbError(error.message); return; }
+    if (data) setSongs((prev) => prev.map((s) => s.id === id ? data : s));
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen selection:bg-yellow-500/30" style={{ backgroundColor: theme.bg, color: theme.text }}>
       <Header onSettingsClick={() => setShowSettings(true)} />
+
+      {/* Error banner */}
+      {dbError && (
+        <div className="mx-4 mt-3 p-3 rounded-xl bg-rose-950 border border-rose-800 text-rose-300 text-xs font-mono break-all">
+          <p className="font-bold mb-1">Eroare Supabase:</p>
+          <p>{dbError}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
