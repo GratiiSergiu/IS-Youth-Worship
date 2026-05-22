@@ -53,7 +53,7 @@ export default function SongList({ songs, onAdd, onDelete }) {
       });
       setImportUrl('');
     } catch {
-      setImportError('Nu s-a putut prelua. Încearcă să copiezi textul manual în câmpul de versuri.');
+      setImportError('Site-ul blochează importul automat. Copiază versurile manual din pagină și lipește-le în câmpul de versuri — acordurile se convertesc automat.');
     } finally {
       setImportLoading(false);
     }

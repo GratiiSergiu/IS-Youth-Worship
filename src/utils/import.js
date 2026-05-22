@@ -164,13 +164,44 @@ function parseGeneric(doc) {
 }
 
 // ─── main export ──────────────────────────────────────────────────────────────
+async function fetchHtml(url) {
+  const encoded = encodeURIComponent(url);
+  const proxies = [
+    async () => {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encoded}`, { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      if (!d.contents || d.contents.length < 200) throw new Error();
+      return d.contents;
+    },
+    async () => {
+      const r = await fetch(`https://corsproxy.io/?${encoded}`, { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) throw new Error();
+      const t = await r.text();
+      if (!t || t.length < 200) throw new Error();
+      return t;
+    },
+    async () => {
+      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encoded}`, { signal: AbortSignal.timeout(12000) });
+      if (!r.ok) throw new Error();
+      const t = await r.text();
+      if (!t || t.length < 200) throw new Error();
+      return t;
+    },
+  ];
+
+  for (const tryProxy of proxies) {
+    try {
+      return await tryProxy();
+    } catch {
+      // try next
+    }
+  }
+  throw new Error('blocked');
+}
+
 export async function fetchSongFromUrl(url) {
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
-  if (!res.ok) throw new Error('proxy_error');
-  const data = await res.json();
-  const html = data.contents;
-  if (!html) throw new Error('empty');
+  const html = await fetchHtml(url);
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
