@@ -1,9 +1,8 @@
-import { Music, CalendarDays, Radio } from 'lucide-react';
+import { Music, CalendarDays } from 'lucide-react';
 
 const tabs = [
   { id: 'repertoriu', label: 'Repertoriu', icon: Music },
   { id: 'planificare', label: 'Planificare', icon: CalendarDays },
-  { id: 'scena', label: 'Pe Scenă', icon: Radio },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }) {

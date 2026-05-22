@@ -4,7 +4,6 @@ import BottomNav from './components/BottomNav';
 import Header from './components/Header';
 import SongList from './components/SongList';
 import SetlistPlanner from './components/SetlistPlanner';
-import LiveMode from './components/LiveMode';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('repertoriu');
@@ -31,10 +30,8 @@ export default function App() {
           onUpdateSetlist={setSetlist}
         />
       )}
-      {activeTab === 'scena' && (
-        <LiveMode setlist={setlist} />
-      )}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 }
+

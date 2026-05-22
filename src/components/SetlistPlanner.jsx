@@ -1,26 +1,27 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight } from 'lucide-react';
+import SongViewer from './SongViewer';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
   const [eventName, setEventName] = useState(setlist?.eventName || 'Tineret Marți');
   const [selectedSongs, setSelectedSongs] = useState(setlist?.songs || []);
+  const [viewingIndex, setViewingIndex] = useState(null);
 
   const addSong = (songId) => {
     const song = songs.find((s) => s.id === songId);
     if (!song) return;
     const exists = selectedSongs.some((item) => item.songId === song.id);
     if (exists) return;
-    const newItem = {
+    setSelectedSongs((prev) => [...prev, {
       songId: song.id,
       titlu: song.titlu,
       autor: song.autor,
       originalKey: song.tonalitate,
       selectedKey: song.tonalitate,
       versuri: song.versuri,
-    };
-    setSelectedSongs((prev) => [...prev, newItem]);
+    }]);
   };
 
   const moveSong = (index, direction) => {
@@ -52,6 +53,19 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
 
   const availableSongs = songs.filter((s) => !selectedSongs.some((item) => item.songId === s.id));
 
+  if (viewingIndex !== null && selectedSongs[viewingIndex]) {
+    return (
+      <SongViewer
+        song={selectedSongs[viewingIndex]}
+        onClose={() => setViewingIndex(null)}
+        onNext={() => setViewingIndex((i) => Math.min(selectedSongs.length - 1, i + 1))}
+        onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
+        hasNext={viewingIndex < selectedSongs.length - 1}
+        hasPrev={viewingIndex > 0}
+      />
+    );
+  }
+
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
       <h2 className="text-xl font-bold text-white mb-4">Planificare</h2>
@@ -72,12 +86,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
         </label>
         <select
           className="w-full bg-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-          onChange={(e) => {
-            if (e.target.value) {
-              addSong(e.target.value);
-              e.target.value = '';
-            }
-          }}
+          onChange={(e) => { if (e.target.value) { addSong(e.target.value); e.target.value = ''; } }}
           defaultValue=""
         >
           <option value="" disabled>-- Selectează cântare --</option>
@@ -92,7 +101,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
         {selectedSongs.length === 0 && (
           <div className="text-center py-8 border-2 border-dashed border-slate-800 rounded-2xl">
             <ListMusic size={32} className="text-slate-700 mx-auto mb-2" />
-            <p className="text-slate-500 text-sm">Nicio piesă în program.<br/>Adaugă din repertoriu.</p>
+            <p className="text-slate-500 text-sm">Nicio piesă în program.<br />Adaugă din repertoriu.</p>
           </div>
         )}
         {selectedSongs.map((item, index) => {
@@ -100,13 +109,17 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
           return (
             <div key={index} className="bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <div className="flex-1 min-w-0 pr-2">
+                <button
+                  className="flex-1 min-w-0 pr-2 text-left"
+                  onClick={() => setViewingIndex(index)}
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-slate-600 font-bold">#{index + 1}</span>
                     <h3 className="font-bold text-white truncate">{item.titlu}</h3>
+                    <ChevronRight size={14} className="text-slate-600 shrink-0" />
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">{item.autor}</p>
-                </div>
+                  <p className="text-xs text-slate-400 mt-0.5 pl-6">{item.autor}</p>
+                </button>
                 <div className="flex items-center gap-1">
                   <button onClick={() => moveSong(index, -1)} className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg active:scale-90 transition">
                     <ArrowUp size={14} />
@@ -121,7 +134,7 @@ export default function SetlistPlanner({ songs, setlist, onUpdateSetlist }) {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-slate-500 font-medium">Tonalitate scenă:</span>
+                <span className="text-xs text-slate-500 font-medium">Tonalitate:</span>
                 <select
                   value={item.selectedKey}
                   onChange={(e) => changeKey(index, e.target.value)}
