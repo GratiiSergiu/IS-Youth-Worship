@@ -1,18 +1,25 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import SongViewer from './SongViewer';
 import { useSettings } from '../contexts/SettingsContext';
+
+function todayString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 function genId() {
   return String(Date.now());
 }
 
-export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong }) {
+export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram }) {
   const { theme } = useSettings();
   const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
   const [viewingIndex, setViewingIndex] = useState(null);
   const [addingEvent, setAddingEvent] = useState(false);
   const [newEventName, setNewEventName] = useState('');
+  const [eventDate, setEventDate] = useState(todayString);
+  const [saveState, setSaveState] = useState('idle'); // idle | saving | saved | error
 
   const activeEvent = setlists.find((e) => e.id === activeId) ?? setlists[0];
   const selectedSongs = activeEvent?.songs ?? [];
@@ -73,6 +80,23 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
   };
 
   const availableSongs = songs.filter((s) => !selectedSongs.some((item) => item.songId === s.id));
+
+  const handleSaveProgram = async () => {
+    if (selectedSongs.length === 0) return;
+    setSaveState('saving');
+    const { error } = await onSaveProgram({
+      data_eveniment: eventDate,
+      nume_eveniment: activeEvent.eventName,
+      cantari: selectedSongs,
+    });
+    if (error) {
+      setSaveState('error');
+      setTimeout(() => setSaveState('idle'), 3000);
+    } else {
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2500);
+    }
+  };
 
   if (viewingIndex !== null && selectedSongs[viewingIndex]) {
     const item = selectedSongs[viewingIndex];
@@ -154,7 +178,7 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
 
       {/* Event card */}
       <div className="rounded-2xl p-4 border mb-4 shadow-lg" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <Calendar size={16} style={{ color: theme.accent }} className="shrink-0" />
           <input
             type="text"
@@ -162,6 +186,18 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
             onChange={(e) => setEventName(e.target.value)}
             className="bg-transparent font-bold focus:outline-none w-full text-lg"
             style={{ color: theme.text }}
+          />
+        </div>
+
+        {/* Date picker */}
+        <div className="flex items-center gap-2 mb-4 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg, border: `1px solid ${theme.border}` }}>
+          <span className="text-xs font-semibold shrink-0" style={{ color: theme.muted }}>Data programului:</span>
+          <input
+            type="date"
+            value={eventDate}
+            onChange={(e) => setEventDate(e.target.value)}
+            className="flex-1 bg-transparent text-sm font-semibold focus:outline-none"
+            style={{ color: theme.text, colorScheme: 'dark' }}
           />
         </div>
 
@@ -225,13 +261,26 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
         })}
       </div>
 
+      {saveState === 'error' && (
+        <div className="mb-3 flex items-center gap-2 px-4 py-3 rounded-xl" style={{ backgroundColor: '#450a0a', border: '1px solid #7f1d1d' }}>
+          <AlertCircle size={16} className="shrink-0" style={{ color: '#f87171' }} />
+          <span className="text-sm" style={{ color: '#f87171' }}>Eroare la salvare. Verifică conexiunea.</span>
+        </div>
+      )}
+
       <button
-        onClick={() => alert('Program salvat!')}
-        className="w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
-        style={{ backgroundColor: theme.accent, color: theme.accentFg }}
+        onClick={handleSaveProgram}
+        disabled={saveState === 'saving' || selectedSongs.length === 0}
+        className="w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition shadow-lg disabled:opacity-60"
+        style={{
+          backgroundColor: saveState === 'saved' ? '#16a34a' : theme.accent,
+          color: saveState === 'saved' ? '#fff' : theme.accentFg,
+        }}
       >
-        <Save size={18} />
-        Salvează Programul
+        {saveState === 'saving' && <Loader2 size={18} className="animate-spin" />}
+        {saveState === 'saved'  && <CheckCircle2 size={18} />}
+        {saveState === 'idle' || saveState === 'error' ? <Save size={18} /> : null}
+        {saveState === 'saving' ? 'Se salvează…' : saveState === 'saved' ? 'Program salvat!' : 'Salvează Programul'}
       </button>
     </div>
   );

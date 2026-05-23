@@ -8,6 +8,7 @@ import SongList from './components/SongList';
 import SetlistPlanner from './components/SetlistPlanner';
 import Collections from './components/Collections';
 import Settings from './components/Settings';
+import HistoryCalendar from './components/HistoryCalendar';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('repertoriu');
@@ -31,6 +32,7 @@ export default function App() {
     ];
   });
   const [collections, setCollections] = useLocalStorage('isworship_collections', []);
+  const [istoricData, setIstoricData] = useState([]);
   const { theme } = useSettings();
 
   // Normalize DB row (capitalized cols) → internal object (lowercase keys)
@@ -65,6 +67,14 @@ export default function App() {
     setLoading(false);
   }, []);
 
+  const fetchIstoric = useCallback(async () => {
+    const { data } = await supabase
+      .from('Istoric')
+      .select('*')
+      .order('data_eveniment', { ascending: false });
+    if (data) setIstoricData(data);
+  }, []);
+
   // ── One-time migration: localStorage → Supabase ───────────────────────────
   useEffect(() => {
     const migrate = async () => {
@@ -89,14 +99,16 @@ export default function App() {
 
   useEffect(() => {
     fetchSongs();
+    fetchIstoric();
 
     const channel = supabase
-      .channel('cantari-changes')
+      .channel('app-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Cântări' }, fetchSongs)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Istoric' }, fetchIstoric)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [fetchSongs]);
+  }, [fetchSongs, fetchIstoric]);
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────
   const handleAddSong = async (song) => {
@@ -113,6 +125,16 @@ export default function App() {
     const { error } = await supabase.from('Cântări').delete().eq('id', id);
     if (error) { setDbError(error.message); return; }
     setSongs((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleSaveProgram = async (entry) => {
+    const { error } = await supabase.from('Istoric').insert({
+      data_eveniment: entry.data_eveniment,
+      nume_eveniment: entry.nume_eveniment,
+      cantari: entry.cantari,
+    });
+    if (!error) fetchIstoric();
+    return { error };
   };
 
   const handleUpdateSong = async (updated) => {
@@ -168,6 +190,13 @@ export default function App() {
               setlists={setlists}
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
+              onSaveProgram={handleSaveProgram}
+            />
+          )}
+          {activeTab === 'istoric' && (
+            <HistoryCalendar
+              songs={songs}
+              istoricData={istoricData}
             />
           )}
         </>
