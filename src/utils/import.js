@@ -22,9 +22,42 @@ function mergeChordLineWithLyrics(chordLine, lyricLine) {
   while ((match = regex.exec(chordLine)) !== null) {
     chords.push({ pos: match.index, chord: match[0] });
   }
-  let result = lyricLine;
-  for (let i = chords.length - 1; i >= 0; i--) {
-    const { pos, chord } = chords[i];
+
+  // Remove artificial spaces from the lyric line before inserting chord markers.
+  // A space at position P is artificial when the chord line has a non-space char at P
+  // AND at P-1 (meaning P is the interior of a chord token, not its start), and the
+  // lyric characters on both sides are letters (the space splits a word mid-syllable).
+  const removedBefore = new Array(lyricLine.length + 1).fill(0);
+  let removed = 0;
+  let cleanLyric = '';
+  for (let p = 0; p < lyricLine.length; p++) {
+    removedBefore[p] = removed;
+    if (
+      lyricLine[p] === ' ' &&
+      p > 0 &&
+      p + 1 < lyricLine.length &&
+      /\p{L}/u.test(lyricLine[p - 1]) &&
+      /\p{L}/u.test(lyricLine[p + 1]) &&
+      p < chordLine.length &&
+      chordLine[p] !== ' ' &&
+      chordLine[p - 1] !== ' '
+    ) {
+      removed++;
+      continue;
+    }
+    cleanLyric += lyricLine[p];
+  }
+  removedBefore[lyricLine.length] = removed;
+
+  // Adjust chord positions to account for removed spaces, then insert markers.
+  const adjustedChords = chords.map(({ pos, chord }) => ({
+    chord,
+    pos: pos - removedBefore[Math.min(pos, lyricLine.length)],
+  }));
+
+  let result = cleanLyric;
+  for (let i = adjustedChords.length - 1; i >= 0; i--) {
+    const { pos, chord } = adjustedChords[i];
     const insertPos = Math.min(pos, result.length);
     result = result.slice(0, insertPos) + `[${chord}]` + result.slice(insertPos);
   }
