@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Plus, X, Music2, Link, Loader2, ClipboardPaste } from 'lucide-react';
 import { fetchSongFromUrl, convertToOurFormat } from '../utils/import';
 import SongViewer from './SongViewer';
@@ -29,6 +29,13 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
   const [importError, setImportError] = useState('');
   const [importMode, setImportMode] = useState('manual');
   const sectionRefs = useRef({});
+  const savedScrollY = useRef(0);
+
+  useEffect(() => {
+    if (viewingIndex === null) {
+      requestAnimationFrame(() => window.scrollTo(0, savedScrollY.current));
+    }
+  }, [viewingIndex]);
 
   // Sort & group alphabetically
   const sorted = [...songs]
@@ -228,7 +235,7 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
                   <div key={song.id}
                     className="rounded-xl p-4 border flex items-start justify-between group active:scale-[0.98] transition-transform cursor-pointer"
                     style={{ backgroundColor: theme.surface, borderColor: theme.border }}
-                    onClick={() => setViewingIndex(flatIndex)}>
+                    onClick={() => { savedScrollY.current = window.scrollY; setViewingIndex(flatIndex); }}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <Music2 size={16} className="shrink-0" style={{ color: theme.accent }} />
