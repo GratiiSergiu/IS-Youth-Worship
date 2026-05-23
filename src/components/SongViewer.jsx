@@ -158,7 +158,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
                 <button onClick={() => setShowKeyPicker((v) => !v)}
                   className="mt-0.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full transition active:scale-95"
                   style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-                  <span className="font-mono text-xs font-bold" style={{ color: theme.accent }}>{currentKey}{keyQuality}</span>
+                  <span className="font-mono text-base font-bold" style={{ color: theme.accent }}>{currentKey}{keyQuality}</span>
                   {semitones !== 0 && <span className="text-[10px]" style={{ color: theme.muted }}>din {originalKey}{keyQuality}</span>}
                   <span className="text-[9px]" style={{ color: theme.muted }}>{showKeyPicker ? '▲' : '▼'}</span>
                 </button>

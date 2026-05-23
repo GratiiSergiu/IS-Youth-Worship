@@ -82,9 +82,21 @@ export function transposeChord(chord, semitones, useFlats = false) {
 export function transposeLyrics(lyrics, semitones, targetKey = '') {
   if (semitones === 0) return lyrics;
   const useFlats = FLAT_KEY_SET.has(normalizeNote(targetKey)) || targetKey.includes('b');
-  return lyrics.replace(/\[([^\]]+)\]/g, (_, chord) => {
-    return '[' + transposeChord(chord, semitones, useFlats) + ']';
-  });
+  return lyrics.split('\n').map(line => {
+    // Bracket format: [G], [Am], etc.
+    if (line.includes('[')) {
+      return line.replace(/\[([^\]]+)\]/g, (_, chord) =>
+        '[' + transposeChord(chord, semitones, useFlats) + ']'
+      );
+    }
+    // Plain chord-above-lyric line: transpose every chord token individually
+    if (isChordOnlyLine(line)) {
+      return line.replace(/\S+/g, token =>
+        isChordToken(token) ? transposeChord(token, semitones, useFlats) : token
+      );
+    }
+    return line;
+  }).join('\n');
 }
 
 export function renderLyrics(lyrics) {
