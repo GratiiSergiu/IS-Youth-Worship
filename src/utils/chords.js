@@ -23,14 +23,26 @@ function isChordOnlyLine(line) {
   return trimmed.split(/\s+/).every(isChordToken);
 }
 
-// Snap a column position to the start of the word it falls within.
-// If pos is already at a word boundary (start of line or after a space), it stays.
-function snapToWordStart(lyricLine, pos) {
+// Snap a column position to the nearest word-start boundary in the lyric.
+// Finds the word-start at-or-before pos and the word-start at-or-after pos,
+// then returns whichever is closer (ties go to the left boundary).
+function snapToNearestWordStart(lyricLine, pos) {
   const clamped = Math.min(pos, lyricLine.length);
-  if (clamped === 0 || lyricLine[clamped - 1] === ' ') return clamped;
-  let start = clamped;
-  while (start > 0 && lyricLine[start - 1] !== ' ') start--;
-  return start;
+
+  // Walk left to find the word-start at or before clamped
+  let prev = clamped;
+  while (prev > 0 && lyricLine[prev - 1] !== ' ') prev--;
+
+  // If already at a word start, no need to check the right side
+  if (prev === clamped) return clamped;
+
+  // Walk right past any non-space chars, then past any spaces to find next word-start
+  let next = clamped;
+  while (next < lyricLine.length && lyricLine[next] !== ' ') next++;
+  while (next < lyricLine.length && lyricLine[next] === ' ') next++;
+
+  // Pick the closer boundary (tie → left wins)
+  return (clamped - prev) <= (next - clamped) ? prev : next;
 }
 
 // Build parts by mapping chord column positions onto the lyric string.
@@ -40,7 +52,7 @@ function buildPartsFromChordAboveLyric(chordLine, lyricLine) {
   const re = /\S+/g;
   let m;
   while ((m = re.exec(chordLine)) !== null) {
-    entries.push({ chord: m[0], pos: snapToWordStart(lyricLine, m.index) });
+    entries.push({ chord: m[0], pos: snapToNearestWordStart(lyricLine, m.index) });
   }
   if (!entries.length) return [];
 
