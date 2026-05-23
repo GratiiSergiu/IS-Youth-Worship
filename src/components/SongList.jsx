@@ -128,14 +128,18 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
   return (
     <div className="pb-24 pt-2 max-w-md mx-auto relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 px-4">
+      <div className="flex items-center mb-4 px-4">
         <h2 className="text-xl font-bold" style={{ color: theme.text }}>Repertoriu</h2>
-        <button onClick={toggleForm}
-          className="p-2.5 rounded-full shadow-lg active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
-          {showForm ? <X size={20} /> : <Plus size={20} />}
-        </button>
       </div>
+
+      {/* FAB — floating add button */}
+      <button
+        onClick={toggleForm}
+        className="fixed bottom-24 right-4 z-50 p-4 rounded-full shadow-2xl active:scale-90 transition-transform"
+        style={{ backgroundColor: theme.accent, color: theme.accentFg }}
+      >
+        {showForm ? <X size={22} /> : <Plus size={22} />}
+      </button>
 
       {/* Add form */}
       {showForm && (
