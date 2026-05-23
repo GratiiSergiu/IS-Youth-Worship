@@ -296,7 +296,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
           onClick={() => setSelectedSong(null)}
         >
           <div
-            className="w-full rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl"
+            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={e => e.stopPropagation()}
           >
@@ -309,7 +309,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
                   {selectedSong.song.titlu}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: theme.muted }}>
-                  Cântată de {selectedSong.dates.length} {selectedSong.dates.length === 1 ? 'ori' : 'ori'} în total
+                  Cântată de {selectedSong.dates.length} {selectedSong.dates.length === 1 ? 'oară' : 'ori'} în total
                 </p>
               </div>
               <button
@@ -320,7 +320,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
                 <X size={18} />
               </button>
             </div>
-            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               {selectedSong.dates.map((d, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg }}>
                   <span className="text-xs font-mono font-bold shrink-0 w-5 text-right" style={{ color: theme.muted }}>
@@ -351,7 +351,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl"
+            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={e => e.stopPropagation()}
           >
@@ -384,7 +384,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
             </div>
 
             {/* Modal body */}
-            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5" style={{ WebkitOverflowScrolling: 'touch' }}>
               {selectedDay.entries.map((entry, ei) => (
                 <div key={ei}>
                   <p className="font-bold text-sm mb-2.5" style={{ color: theme.accent }}>
