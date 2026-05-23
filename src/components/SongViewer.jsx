@@ -49,7 +49,10 @@ function buildChordRow(parts) {
   return row;
 }
 
-function buildLyricRow(parts) {
+function buildLyricRow(parts, plainFormat = false) {
+  if (plainFormat) {
+    return parts.filter(p => p.type === 'text').map(p => p.content).join('');
+  }
   let result = '';
   let prevWasChord = false;
   for (const p of parts) {
@@ -119,7 +122,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
   function renderLines(linesToRender) {
     return linesToRender.map((line) => {
       const hasChords = line.parts.some((p) => p.type === 'chord');
-      const lyricRow = buildLyricRow(line.parts);
+      const lyricRow = buildLyricRow(line.parts, line.plainFormat);
       if (!hasChords || !showChords) {
         return <div key={line.lineIndex} style={lyricStyle} className="leading-snug">{lyricRow || ' '}</div>;
       }

@@ -115,7 +115,7 @@ export function renderLyrics(lyrics) {
         const nextLine = rawLines[nextIdx];
         if (nextLine !== '' && !isChordOnlyLine(nextLine) && !nextLine.includes('[')) {
           const parts = buildPartsFromChordAboveLyric(line, nextLine);
-          result.push({ lineIndex: result.length, parts });
+          result.push({ lineIndex: result.length, parts, plainFormat: true });
           i += 2;
           continue;
         }
