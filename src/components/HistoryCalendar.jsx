@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History, Trash2, CalendarDays, ChevronRight as ChevRight } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const MONTHS_RO = [
@@ -19,6 +19,7 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
   const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedSong, setSelectedSong] = useState(null); // { song, count, occurrences[] }
   const [period, setPeriod] = useState('30');
 
   // Map: dateStr → entries[]
@@ -67,18 +68,25 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
     const fromStr = fromDate.toISOString().slice(0, 10);
 
     const counts = {};
+    const occurrences = {}; // songId → [{ date, eventName }]
     for (const entry of istoricData) {
       if (entry.data_eveniment < fromStr) continue;
       for (const c of (entry.cantari ?? [])) {
         counts[c.songId] = (counts[c.songId] || 0) + 1;
+        if (!occurrences[c.songId]) occurrences[c.songId] = [];
+        occurrences[c.songId].push({ date: entry.data_eveniment, eventName: entry.nume_eveniment });
       }
+    }
+    // Sort occurrences newest first
+    for (const id of Object.keys(occurrences)) {
+      occurrences[id].sort((a, b) => b.date.localeCompare(a.date));
     }
 
     const top = [...songs]
       .filter(s => counts[s.id])
       .sort((a, b) => counts[b.id] - counts[a.id])
       .slice(0, 10)
-      .map(s => ({ song: s, count: counts[s.id] }));
+      .map(s => ({ song: s, count: counts[s.id], occurrences: occurrences[s.id] ?? [] }));
 
     const rare = [...songs]
       .sort((a, b) => (counts[a.id] || 0) - (counts[b.id] || 0))
@@ -221,19 +229,25 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                 <p className="text-xs px-1" style={{ color: theme.muted }}>Nicio cântare în această perioadă.</p>
               ) : (
                 <div className="space-y-1.5">
-                  {stats.top.map(({ song, count }, i) => (
-                    <div key={song.id} className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg }}>
+                  {stats.top.map(({ song, count, occurrences }, i) => (
+                    <button
+                      key={song.id}
+                      onClick={() => setSelectedSong({ song, count, occurrences })}
+                      className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 active:scale-[0.98] transition-transform"
+                      style={{ backgroundColor: theme.bg }}
+                    >
                       <span className="text-xs font-mono font-bold w-5 text-right shrink-0" style={{ color: theme.muted }}>
                         {i + 1}.
                       </span>
-                      <span className="flex-1 text-sm font-semibold truncate" style={{ color: theme.text }}>
+                      <span className="flex-1 text-sm font-semibold truncate text-left" style={{ color: theme.text }}>
                         {song.titlu}
                       </span>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
                         style={{ backgroundColor: '#4ade8025', color: '#4ade80' }}>
                         ×{count}
                       </span>
-                    </div>
+                      <ChevRight size={14} className="shrink-0" style={{ color: theme.muted }} />
+                    </button>
                   ))}
                 </div>
               )}
@@ -359,6 +373,82 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Song detail bottom sheet ── */}
+      {selectedSong && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+          onClick={() => setSelectedSong(null)}
+        >
+          <div
+            className="w-full rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            style={{
+              backgroundColor: theme.surface,
+              borderTop: `2px solid ${theme.accent}`,
+              maxHeight: '82vh',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-start justify-between px-5 py-3 shrink-0" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <div className="flex-1 min-w-0 pr-3">
+                <p className="font-bold text-base truncate" style={{ color: theme.text }}>
+                  {selectedSong.song.titlu}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-lg"
+                    style={{ backgroundColor: theme.bg, color: theme.chord }}>
+                    {selectedSong.song.tonalitate}
+                  </span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#4ade8025', color: '#4ade80' }}>
+                    cântată de {selectedSong.count} {selectedSong.count === 1 ? 'ori' : 'ori'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedSong(null)}
+                className="p-2 rounded-xl shrink-0"
+                style={{ backgroundColor: theme.bg, color: theme.muted }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Occurrences list */}
+            <div className="overflow-y-auto min-h-0 flex-1 px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.muted }}>
+                Istoricul aparițiilor
+              </p>
+              <div className="space-y-2">
+                {selectedSong.occurrences.map((occ, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-3"
+                    style={{ backgroundColor: theme.bg }}>
+                    <CalendarDays size={15} className="shrink-0" style={{ color: theme.accent }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold capitalize" style={{ color: theme.text }}>
+                        {new Date(occ.date + 'T12:00:00').toLocaleDateString('ro-RO', {
+                          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                        })}
+                      </p>
+                      {occ.eventName && (
+                        <p className="text-xs mt-0.5 truncate" style={{ color: theme.muted }}>
+                          {occ.eventName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
