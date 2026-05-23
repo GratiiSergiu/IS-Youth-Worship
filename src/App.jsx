@@ -137,6 +137,11 @@ export default function App() {
     return { error };
   };
 
+  const handleDeleteProgram = async (id) => {
+    await supabase.from('Istoric').delete().eq('id', id);
+    fetchIstoric();
+  };
+
   const handleUpdateSong = async (updated) => {
     const { id } = updated;
     const { data, error } = await supabase
@@ -197,6 +202,7 @@ export default function App() {
             <HistoryCalendar
               songs={songs}
               istoricData={istoricData}
+              onDeleteProgram={handleDeleteProgram}
             />
           )}
         </>

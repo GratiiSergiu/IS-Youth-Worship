@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History, Trash2 } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const MONTHS_RO = [
@@ -12,7 +12,7 @@ function toDateStr(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function HistoryCalendar({ songs, istoricData }) {
+export default function HistoryCalendar({ songs, istoricData, onDeleteProgram }) {
   const { theme } = useSettings();
   const today = new Date();
 
@@ -280,17 +280,21 @@ export default function HistoryCalendar({ songs, istoricData }) {
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full rounded-t-3xl max-h-[72vh] flex flex-col shadow-2xl"
-            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
+            className="w-full rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            style={{
+              backgroundColor: theme.surface,
+              borderTop: `2px solid ${theme.accent}`,
+              maxHeight: '82vh',
+            }}
             onClick={e => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
             </div>
 
             {/* Modal header */}
-            <div className="flex items-start justify-between px-5 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+            <div className="flex items-start justify-between px-5 py-3 shrink-0" style={{ borderBottom: `1px solid ${theme.border}` }}>
               <div>
                 <p className="font-bold text-base capitalize" style={{ color: theme.text }}>
                   {new Date(selectedDay.date + 'T12:00:00').toLocaleDateString('ro-RO', {
@@ -305,20 +309,37 @@ export default function HistoryCalendar({ songs, istoricData }) {
               </div>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="p-2 rounded-xl mt-0.5"
+                className="p-2 rounded-xl mt-0.5 shrink-0"
                 style={{ backgroundColor: theme.bg, color: theme.muted }}
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal body */}
-            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
-              {selectedDay.entries.map((entry, ei) => (
-                <div key={ei}>
-                  <p className="font-bold text-sm mb-2.5" style={{ color: theme.accent }}>
-                    {entry.nume_eveniment || 'Program'}
-                  </p>
+            {/* Modal body — scrollable */}
+            <div className="overflow-y-auto min-h-0 flex-1 px-5 py-4 space-y-5">
+              {selectedDay.entries.map((entry) => (
+                <div key={entry.id}>
+                  {/* Entry header with delete */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <p className="font-bold text-sm" style={{ color: theme.accent }}>
+                      {entry.nume_eveniment || 'Program'}
+                    </p>
+                    <button
+                      onClick={async () => {
+                        if (!window.confirm('Ștergi acest program din istoric?')) return;
+                        await onDeleteProgram(entry.id);
+                        const remaining = selectedDay.entries.filter(e => e.id !== entry.id);
+                        if (remaining.length === 0) setSelectedDay(null);
+                        else setSelectedDay({ ...selectedDay, entries: remaining });
+                      }}
+                      className="p-1.5 rounded-lg transition active:scale-90"
+                      style={{ backgroundColor: '#450a0a', color: '#f87171' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
                   <div className="space-y-1.5">
                     {(entry.cantari ?? []).map((c, ci) => (
                       <div key={ci} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
