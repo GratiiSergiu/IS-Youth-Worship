@@ -51,14 +51,9 @@ function buildChordRow(parts) {
 
 function buildLyricRow(parts) {
   let result = '';
-  let prevWasChord = false;
   for (const p of parts) {
-    if (p.type === 'chord') { prevWasChord = true; continue; }
-    if (prevWasChord && result.length > 0 && !result.endsWith(' ') && p.content.length > 0 && !p.content.startsWith(' ')) {
-      result += ' ';
-    }
+    if (p.type === 'chord') continue;
     result += p.content;
-    prevWasChord = false;
   }
   return result;
 }
