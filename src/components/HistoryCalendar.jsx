@@ -19,6 +19,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
   const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedSong, setSelectedSong] = useState(null);
   const [period, setPeriod] = useState('30');
 
   // Map: dateStr → entries[]
@@ -88,6 +89,16 @@ export default function HistoryCalendar({ songs, istoricData }) {
 
     return { top, rare };
   }, [istoricData, songs, period]);
+
+  const getSongDates = (songId) => {
+    const dates = [];
+    for (const entry of istoricData) {
+      if ((entry.cantari ?? []).some(c => c.songId === songId)) {
+        dates.push({ date: entry.data_eveniment, eventName: entry.nume_eveniment });
+      }
+    }
+    return dates.sort((a, b) => b.date.localeCompare(a.date));
+  };
 
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
@@ -222,7 +233,12 @@ export default function HistoryCalendar({ songs, istoricData }) {
               ) : (
                 <div className="space-y-1.5">
                   {stats.top.map(({ song, count }, i) => (
-                    <div key={song.id} className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg }}>
+                    <button
+                      key={song.id}
+                      onClick={() => setSelectedSong({ song, dates: getSongDates(song.id) })}
+                      className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 active:scale-[0.98] transition-transform text-left"
+                      style={{ backgroundColor: theme.bg }}
+                    >
                       <span className="text-xs font-mono font-bold w-5 text-right shrink-0" style={{ color: theme.muted }}>
                         {i + 1}.
                       </span>
@@ -233,7 +249,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
                         style={{ backgroundColor: '#4ade8025', color: '#4ade80' }}>
                         ×{count}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -272,6 +288,61 @@ export default function HistoryCalendar({ songs, istoricData }) {
         )}
       </div>
 
+      {/* ── Song detail bottom sheet ── */}
+      {selectedSong && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+          onClick={() => setSelectedSong(null)}
+        >
+          <div
+            className="w-full rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl"
+            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
+            </div>
+            <div className="flex items-start justify-between px-5 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <div>
+                <p className="font-bold text-base" style={{ color: theme.text }}>
+                  {selectedSong.song.titlu}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: theme.muted }}>
+                  Cântată de {selectedSong.dates.length} {selectedSong.dates.length === 1 ? 'ori' : 'ori'} în total
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedSong(null)}
+                className="p-2 rounded-xl mt-0.5"
+                style={{ backgroundColor: theme.bg, color: theme.muted }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+              {selectedSong.dates.map((d, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg }}>
+                  <span className="text-xs font-mono font-bold shrink-0 w-5 text-right" style={{ color: theme.muted }}>
+                    {i + 1}.
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold" style={{ color: theme.text }}>
+                      {new Date(d.date + 'T12:00:00').toLocaleDateString('ro-RO', {
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </p>
+                    {d.eventName && (
+                      <p className="text-xs mt-0.5 truncate" style={{ color: theme.muted }}>{d.eventName}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Day detail bottom sheet ── */}
       {selectedDay && (
         <div
@@ -280,7 +351,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full rounded-t-3xl max-h-[72vh] flex flex-col shadow-2xl"
+            className="w-full rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={e => e.stopPropagation()}
           >
