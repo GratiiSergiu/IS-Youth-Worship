@@ -205,26 +205,46 @@ function parseGeneric(doc) {
   return { title, author, lyrics, key };
 }
 
+async function fetchWithTimeout(url, ms = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    return r;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 // ─── main export ──────────────────────────────────────────────────────────────
 async function fetchHtml(url) {
   const encoded = encodeURIComponent(url);
   const proxies = [
     async () => {
-      const r = await fetch(`https://api.allorigins.win/get?url=${encoded}`, { signal: AbortSignal.timeout(12000) });
+      const r = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encoded}`);
       if (!r.ok) throw new Error();
       const d = await r.json();
       if (!d.contents || d.contents.length < 200) throw new Error();
       return d.contents;
     },
     async () => {
-      const r = await fetch(`https://corsproxy.io/?${encoded}`, { signal: AbortSignal.timeout(12000) });
+      const r = await fetchWithTimeout(`https://corsproxy.io/?${encoded}`);
       if (!r.ok) throw new Error();
       const t = await r.text();
       if (!t || t.length < 200) throw new Error();
       return t;
     },
     async () => {
-      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encoded}`, { signal: AbortSignal.timeout(12000) });
+      const r = await fetchWithTimeout(`https://thingproxy.freeboard.io/fetch/${url}`);
+      if (!r.ok) throw new Error();
+      const t = await r.text();
+      if (!t || t.length < 200) throw new Error();
+      return t;
+    },
+    async () => {
+      const r = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encoded}`);
       if (!r.ok) throw new Error();
       const t = await r.text();
       if (!t || t.length < 200) throw new Error();

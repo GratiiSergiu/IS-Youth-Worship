@@ -87,7 +87,7 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
       setForm({ titlu: result.title, autor: result.author, versuri: result.lyrics });
       setImportUrl('');
     } catch {
-      setImportError('Site-ul blochează importul automat. Copiază versurile manual și lipește-le în câmpul de versuri.');
+      setImportError('Importul automat a eșuat. Dacă ai un ad-blocker activ, dezactivează-l pentru această pagină și încearcă din nou. Altfel, copiază versurile manual și lipește-le mai jos.');
     } finally {
       setImportLoading(false);
     }
