@@ -294,21 +294,24 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+            className="w-full rounded-t-3xl shadow-2xl"
             style={{
               backgroundColor: theme.surface,
               borderTop: `2px solid ${theme.accent}`,
-              maxHeight: '82vh',
+              height: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
             }}
-            onClick={e => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="flex justify-center pt-3 pb-1" style={{ flexShrink: 0 }}>
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
             </div>
 
             {/* Modal header */}
-            <div className="flex items-start justify-between px-5 py-3 shrink-0" style={{ borderBottom: `1px solid ${theme.border}` }}>
+            <div className="flex items-start justify-between px-5 py-3"
+              style={{ borderBottom: `1px solid ${theme.border}`, flexShrink: 0 }}>
               <div>
                 <p className="font-bold text-base capitalize" style={{ color: theme.text }}>
                   {new Date(selectedDay.date + 'T12:00:00').toLocaleDateString('ro-RO', {
@@ -323,18 +326,20 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
               </div>
               <button
                 onClick={() => setSelectedDay(null)}
-                className="p-2 rounded-xl mt-0.5 shrink-0"
-                style={{ backgroundColor: theme.bg, color: theme.muted }}
+                className="p-2 rounded-xl mt-0.5"
+                style={{ backgroundColor: theme.bg, color: theme.muted, flexShrink: 0 }}
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal body — scrollable */}
-            <div className="overflow-y-auto min-h-0 flex-1 px-5 py-4 space-y-5">
+            {/* Scrollable body */}
+            <div
+              className="px-5 py-4 space-y-5"
+              style={{ flex: '1 1 0', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+            >
               {selectedDay.entries.map((entry) => (
                 <div key={entry.id}>
-                  {/* Entry header with delete */}
                   <div className="flex items-center justify-between mb-2.5">
                     <p className="font-bold text-sm" style={{ color: theme.accent }}>
                       {entry.nume_eveniment || 'Program'}
@@ -353,19 +358,18 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                       <Trash2 size={14} />
                     </button>
                   </div>
-
                   <div className="space-y-1.5">
                     {(entry.cantari ?? []).map((c, ci) => (
                       <div key={ci} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
                         style={{ backgroundColor: theme.bg }}>
-                        <span className="text-xs font-mono font-bold shrink-0 w-5 text-right" style={{ color: theme.muted }}>
+                        <span className="text-xs font-mono font-bold w-5 text-right" style={{ color: theme.muted, flexShrink: 0 }}>
                           {ci + 1}.
                         </span>
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-lg shrink-0"
-                          style={{ backgroundColor: theme.surface, color: theme.chord }}>
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-lg"
+                          style={{ backgroundColor: theme.surface, color: theme.chord, flexShrink: 0 }}>
                           {c.selectedKey || c.originalKey}
                         </span>
-                        <span className="flex-1 text-sm font-semibold truncate" style={{ color: theme.text }}>
+                        <span className="text-sm font-semibold truncate" style={{ color: theme.text }}>
                           {c.titlu}
                         </span>
                       </div>
@@ -377,6 +381,7 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
           </div>
         </div>
       )}
+
       {/* ── Song detail bottom sheet ── */}
       {selectedSong && (
         <div
@@ -385,22 +390,25 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
           onClick={() => setSelectedSong(null)}
         >
           <div
-            className="w-full rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+            className="w-full rounded-t-3xl shadow-2xl"
             style={{
               backgroundColor: theme.surface,
               borderTop: `2px solid ${theme.accent}`,
-              maxHeight: '82vh',
+              height: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
             }}
-            onClick={e => e.stopPropagation()}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="flex justify-center pt-3 pb-1" style={{ flexShrink: 0 }}>
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
             </div>
 
             {/* Header */}
-            <div className="flex items-start justify-between px-5 py-3 shrink-0" style={{ borderBottom: `1px solid ${theme.border}` }}>
-              <div className="flex-1 min-w-0 pr-3">
+            <div className="flex items-start justify-between px-5 py-3"
+              style={{ borderBottom: `1px solid ${theme.border}`, flexShrink: 0 }}>
+              <div className="min-w-0 pr-3" style={{ flex: 1 }}>
                 <p className="font-bold text-base truncate" style={{ color: theme.text }}>
                   {selectedSong.song.titlu}
                 </p>
@@ -411,21 +419,24 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                   </span>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{ backgroundColor: '#4ade8025', color: '#4ade80' }}>
-                    cântată de {selectedSong.count} {selectedSong.count === 1 ? 'ori' : 'ori'}
+                    cântată de {selectedSong.count} ori
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedSong(null)}
-                className="p-2 rounded-xl shrink-0"
-                style={{ backgroundColor: theme.bg, color: theme.muted }}
+                className="p-2 rounded-xl"
+                style={{ backgroundColor: theme.bg, color: theme.muted, flexShrink: 0 }}
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Occurrences list */}
-            <div className="overflow-y-auto min-h-0 flex-1 px-5 py-4">
+            {/* Scrollable occurrences */}
+            <div
+              className="px-5 py-4"
+              style={{ flex: '1 1 0', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+            >
               <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: theme.muted }}>
                 Istoricul aparițiilor
               </p>
@@ -433,8 +444,8 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                 {selectedSong.occurrences.map((occ, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-3"
                     style={{ backgroundColor: theme.bg }}>
-                    <CalendarDays size={15} className="shrink-0" style={{ color: theme.accent }} />
-                    <div className="flex-1 min-w-0">
+                    <CalendarDays size={15} style={{ color: theme.accent, flexShrink: 0 }} />
+                    <div className="min-w-0" style={{ flex: 1 }}>
                       <p className="text-sm font-semibold capitalize" style={{ color: theme.text }}>
                         {new Date(occ.date + 'T12:00:00').toLocaleDateString('ro-RO', {
                           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
