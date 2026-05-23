@@ -23,15 +23,24 @@ function isChordOnlyLine(line) {
   return trimmed.split(/\s+/).every(isChordToken);
 }
 
+// Snap a column position to the start of the word it falls within.
+// If pos is already at a word boundary (start of line or after a space), it stays.
+function snapToWordStart(lyricLine, pos) {
+  const clamped = Math.min(pos, lyricLine.length);
+  if (clamped === 0 || lyricLine[clamped - 1] === ' ') return clamped;
+  let start = clamped;
+  while (start > 0 && lyricLine[start - 1] !== ' ') start--;
+  return start;
+}
+
 // Build parts by mapping chord column positions onto the lyric string.
-// The chord row positions are used as lyric character offsets so that
-// buildChordRow() will reproduce the original horizontal alignment.
+// Each chord is snapped to the nearest word start so splits never fall mid-word.
 function buildPartsFromChordAboveLyric(chordLine, lyricLine) {
   const entries = [];
   const re = /\S+/g;
   let m;
   while ((m = re.exec(chordLine)) !== null) {
-    entries.push({ chord: m[0], pos: m.index });
+    entries.push({ chord: m[0], pos: snapToWordStart(lyricLine, m.index) });
   }
   if (!entries.length) return [];
 
