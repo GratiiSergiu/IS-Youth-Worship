@@ -9,12 +9,14 @@ import SetlistPlanner from './components/SetlistPlanner';
 import Collections from './components/Collections';
 import Settings from './components/Settings';
 import HistoryCalendar from './components/HistoryCalendar';
+import SplashScreen from './components/SplashScreen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('repertoriu');
   const [showSettings, setShowSettings] = useState(false);
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [setlists, setSetlists] = useLocalStorage('isworship_setlists', () => {
     // Migrate old single-setlist format
@@ -157,6 +159,13 @@ export default function App() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
+    {showSplash && (
+      <SplashScreen
+        dataReady={!loading}
+        onDone={() => setShowSplash(false)}
+      />
+    )}
     <div className="min-h-screen selection:bg-yellow-500/30" style={{ backgroundColor: theme.bg, color: theme.text }}>
       <Header onSettingsClick={() => setShowSettings(true)} />
 
@@ -212,5 +221,6 @@ export default function App() {
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
+    </>
   );
 }

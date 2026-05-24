@@ -2,8 +2,8 @@ import { createContext, useContext } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const THEMES = {
-  dark:     { name: 'Noapte',    bg: '#020817', surface: '#0f172a', border: '#1e293b', text: '#ffffff', muted: '#475569', accent: '#eab308', accentFg: '#020817', chord: '#facc15', grad: ['#1e293b', '#0f172a'] },
-  light:    { name: 'Zi',        bg: '#f1f5f9', surface: '#ffffff', border: '#e2e8f0', text: '#0f172a', muted: '#94a3b8', accent: '#d97706', accentFg: '#ffffff', chord: '#b45309', grad: ['#f8fafc', '#cbd5e1'] },
+  dark:     { name: 'Noapte',    bg: '#080808', surface: '#111111', border: '#1f1f1f', text: '#ffffff', muted: '#555555', accent: '#6366f1', accentFg: '#ffffff', chord: '#a5b4fc', grad: ['#f43f5e', '#6366f1'] },
+  light:    { name: 'Zi',        bg: '#f1f5f9', surface: '#ffffff', border: '#e2e8f0', text: '#0f172a', muted: '#94a3b8', accent: '#6366f1', accentFg: '#ffffff', chord: '#4f46e5', grad: ['#f43f5e', '#6366f1'] },
   ocean:    { name: 'Ocean',     bg: '#030d1a', surface: '#061828', border: '#0c2d50', text: '#dbeafe', muted: '#3d6d96', accent: '#38bdf8', accentFg: '#030d1a', chord: '#38bdf8', grad: ['#0369a1', '#7dd3fc'] },
   forest:   { name: 'Pădure',   bg: '#071a0e', surface: '#0e2b17', border: '#1a4d2e', text: '#dcfce7', muted: '#3d7a52', accent: '#4ade80', accentFg: '#071a0e', chord: '#4ade80', grad: ['#166534', '#86efac'] },
   sunset:   { name: 'Apus',     bg: '#1a0800', surface: '#2d1200', border: '#4d2200', text: '#fff7ed', muted: '#8a5030', accent: '#fb923c', accentFg: '#1a0800', chord: '#fb923c', grad: ['#9a3412', '#fdba74'] },
