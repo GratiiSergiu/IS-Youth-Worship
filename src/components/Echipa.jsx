@@ -187,7 +187,7 @@ export default function Echipa({ membri, onUpdate }) {
 
             {formStep === 2 &&
               <>
-                <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-32 min-h-0">
+                <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-48 min-h-0">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
                       Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
