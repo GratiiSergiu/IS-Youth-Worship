@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, TrendingUp, Clock, History, Trash2 } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const MONTHS_RO = [
@@ -12,7 +12,7 @@ function toDateStr(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function HistoryCalendar({ songs, istoricData }) {
+export default function HistoryCalendar({ songs, istoricData, onDeleteProgram }) {
   const { theme } = useSettings();
   const today = new Date();
 
@@ -20,6 +20,7 @@ export default function HistoryCalendar({ songs, istoricData }) {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSong, setSelectedSong] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [period, setPeriod] = useState('30');
 
   // Map: dateStr → entries[]
@@ -387,9 +388,28 @@ export default function HistoryCalendar({ songs, istoricData }) {
             <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5" style={{ WebkitOverflowScrolling: 'touch' }}>
               {selectedDay.entries.map((entry, ei) => (
                 <div key={ei}>
-                  <p className="font-bold text-sm mb-2.5" style={{ color: theme.accent }}>
-                    {entry.nume_eveniment || 'Program'}
-                  </p>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <p className="font-bold text-sm" style={{ color: theme.accent }}>
+                      {entry.nume_eveniment || 'Program'}
+                    </p>
+                    <button
+                      onClick={async () => {
+                        if (!window.confirm('Ștergi acest program? Acțiunea nu poate fi anulată.')) return;
+                        setDeletingId(entry.id);
+                        await onDeleteProgram(entry.id);
+                        setDeletingId(null);
+                        const remaining = selectedDay.entries.filter((_, i) => i !== ei);
+                        if (remaining.length === 0) setSelectedDay(null);
+                        else setSelectedDay({ ...selectedDay, entries: remaining });
+                      }}
+                      disabled={deletingId === entry.id}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition active:scale-95 disabled:opacity-50"
+                      style={{ backgroundColor: '#ef444420', color: '#ef4444' }}
+                    >
+                      <Trash2 size={13} />
+                      {deletingId === entry.id ? 'Se șterge…' : 'Șterge'}
+                    </button>
+                  </div>
                   <div className="space-y-1.5">
                     {(entry.cantari ?? []).map((c, ci) => (
                       <div key={ci} className="flex items-center gap-3 rounded-xl px-3 py-2.5"

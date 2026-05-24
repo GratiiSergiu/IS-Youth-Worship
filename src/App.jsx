@@ -127,6 +127,12 @@ export default function App() {
     setSongs((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const handleDeleteProgram = async (id) => {
+    const { error } = await supabase.from('Istoric').delete().eq('id', id);
+    if (!error) fetchIstoric();
+    return { error };
+  };
+
   const handleSaveProgram = async (entry) => {
     const { error } = await supabase.from('Istoric').insert({
       data_eveniment: entry.data_eveniment,
@@ -197,6 +203,7 @@ export default function App() {
             <HistoryCalendar
               songs={songs}
               istoricData={istoricData}
+              onDeleteProgram={handleDeleteProgram}
             />
           )}
         </>
