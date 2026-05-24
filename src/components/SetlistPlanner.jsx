@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle, Users, Repeat2, SlidersHorizontal } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle, SlidersHorizontal } from 'lucide-react';
 import SongViewer from './SongViewer';
-import Repetitii from './Repetitii';
 import { useSettings } from '../contexts/SettingsContext';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 
 function todayString() {
   const d = new Date();
@@ -14,7 +12,7 @@ function genId() {
   return String(Date.now());
 }
 
-export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram }) {
+export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram, membri, onUpdateMembri }) {
   const { theme } = useSettings();
   const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
   const [viewingIndex, setViewingIndex] = useState(null);
@@ -22,10 +20,7 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
   const [newEventName, setNewEventName] = useState('');
   const [eventDate, setEventDate] = useState(todayString);
   const [saveState, setSaveState] = useState('idle');
-  const [subTab, setSubTab] = useState('programe');
   const [aranjamentIndex, setAranjamentIndex] = useState(null);
-  const [membri, setMembri] = useLocalStorage('isworship_echipa', []);
-  const [repetitii, setRepetitii] = useLocalStorage('isworship_repetitii', []);
 
   const activeEvent = setlists.find((e) => e.id === activeId) ?? setlists[0];
   const selectedSongs = activeEvent?.songs ?? [];
@@ -112,8 +107,6 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
   };
   const voceListi = membri.filter((m) => m.activ && (m.roluri ?? []).includes('Vocalist'));
 
-  // Decouple SongViewer from the main planner render flow.
-  // This ensures it's either the viewer OR the planner, never both.
   if (viewingIndex !== null && selectedSongs[viewingIndex]) {
     const item = selectedSongs[viewingIndex];
     const masterSong = songs.find((s) => s.id === item.songId);
@@ -194,39 +187,16 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
 
       {/* Event card */}
       <div className="rounded-2xl p-4 border mb-4 shadow-lg" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar size={16} style={{ color: theme.accent }} className="shrink-0" />
-          <input
-            type="text"
-            value={activeEvent?.eventName ?? ''}
-            onChange={(e) => setEventName(e.target.value)}
-            className="bg-transparent font-bold focus:outline-none w-full text-lg"
-            style={{ color: theme.text }}
-          />
-        </div>
-
-        {/* Sub-tabs */}
-        <div className="flex gap-1 mb-4 p-1 rounded-2xl" style={{ backgroundColor: theme.bg }}>
-          {[
-            { id: 'programe',   label: 'Programe',   Icon: ListMusic },
-            { id: 'repetitii', label: 'Repetiții', Icon: Repeat2 },
-          ].map(({ id, label, Icon }) => (
-            <button key={id} onClick={() => setSubTab(id)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition"
-              style={subTab === id
-                ? { backgroundColor: theme.accent, color: theme.accentFg }
-                : { color: theme.muted }}>
-              <Icon size={13} /> {label}
-            </button>
-          ))}
-        </div>
-
-        {subTab === 'repetitii' && (
-          <Repetitii repetitii={repetitii} membri={membri} onUpdate={setRepetitii} />
-        )}
-
-        {subTab === 'programe' && <>
-          {/* Date picker */}
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar size={16} style={{ color: theme.accent }} className="shrink-0" />
+            <input
+                type="text"
+                value={activeEvent?.eventName ?? ''}
+                onChange={(e) => setEventName(e.target.value)}
+                className="bg-transparent font-bold focus:outline-none w-full text-lg"
+                style={{ color: theme.text }}
+            />
+          </div>
           <div className="flex items-center gap-2 mb-4 rounded-xl px-3 py-2.5" style={{ backgroundColor: theme.bg, border: `1px solid ${theme.border}` }}>
             <span className="text-xs font-semibold shrink-0" style={{ color: theme.muted }}>Data programului:</span>
             <input
@@ -253,13 +223,10 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
               <option key={s.id} value={s.id}>{s.titlu} ({s.tonalitate})</option>
             ))}
           </select>
-        </>}
       </div>
 
-      {/* Conditional Content based on SubTab */}
-      {subTab === 'programe' && <>
-        {/* Song list */}
-        <div className="space-y-2.5 mb-6">
+      {/* Song list */}
+      <div className="space-y-2.5 mb-6">
           {selectedSongs.length === 0 && (
             <div className="text-center py-8 border-2 border-dashed rounded-2xl" style={{ borderColor: theme.border }}>
               <ListMusic size={32} className="mx-auto mb-2" style={{ color: theme.border }} />
@@ -327,7 +294,6 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
           {saveState === 'idle' || saveState === 'error' ? <Save size={18} /> : null}
           {saveState === 'saving' ? 'Se salvează…' : saveState === 'saved' ? 'Program salvat!' : 'Salvează Programul'}
         </button>
-      </>}
 
 
       {/* ── Aranjament modal ── */}
