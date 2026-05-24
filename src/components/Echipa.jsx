@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Plus, X, Pencil, Check, Mic2, Guitar, Music2, Drum } from 'lucide-react';
+import { Plus, X, Pencil, Check, Mic2, Music, Music2, Music3, Drumstick } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const ROLURI = ['Voce', 'Chitară Lead', 'Chitară Ritmică', 'Bass', 'Tobe', 'Clape', 'Vioară', 'Alt instrument'];
 
 const ROLE_ICON = {
   'Voce': Mic2,
-  'Chitară Lead': Guitar,
-  'Chitară Ritmică': Guitar,
-  'Bass': Music2,
-  'Tobe': Drum,
+  'Chitară Lead': Music3,
+  'Chitară Ritmică': Music3,
+  'Bass': Music,
+  'Tobe': Drumstick,
   'Clape': Music2,
   'Vioară': Music2,
   'Alt instrument': Music2,
