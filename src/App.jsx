@@ -9,7 +9,6 @@ import SetlistPlanner from './components/SetlistPlanner';
 import Collections from './components/Collections';
 import Settings from './components/Settings';
 import HistoryCalendar from './components/HistoryCalendar';
-import Repetitii from './components/Repetitii';
 import SplashScreen from './components/SplashScreen';
 
 export default function App() {
@@ -31,11 +30,10 @@ export default function App() {
     return [
       { id: '1', eventName: 'Tineret Marți', songs: [] },
       { id: '2', eventName: 'Slujire Duminică', songs: [] },
+      { id: '3', eventName: 'Repetiții', songs: [] },
     ];
   });
   const [collections, setCollections] = useLocalStorage('isworship_collections', []);
-  const [repetitii, setRepetitii] = useLocalStorage('isworship_repetitii', []);
-  const [membri] = useLocalStorage('isworship_membri', []);
   const [istoricData, setIstoricData] = useState([]);
   const { theme } = useSettings();
 
@@ -208,13 +206,6 @@ export default function App() {
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
-            />
-          )}
-          {activeTab === 'repetitii' && (
-            <Repetitii
-              repetitii={repetitii}
-              membri={membri}
-              onUpdate={setRepetitii}
             />
           )}
           {activeTab === 'istoric' && (
