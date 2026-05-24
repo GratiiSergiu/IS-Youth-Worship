@@ -131,7 +131,7 @@ export default function Echipa({ membri, onUpdate }) {
         <div className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowForm(false)}>
-          <div className="w-full rounded-t-3xl flex flex-col anim-sheet overflow-hidden"
+          <div className="w-full rounded-t-3xl flex flex-col anim-sheet"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '88vh' }}
             onClick={(e) => e.stopPropagation()}>
 
@@ -148,40 +148,42 @@ export default function Echipa({ membri, onUpdate }) {
               <button onClick={() => setShowForm(false)} style={{ color: theme.muted }}><X size={20} /></button>
             </div>
 
-            {/* Scrollable content */}
-            <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-4 min-h-0">
-              <input
-                autoFocus
-                placeholder="Nume complet"
-                value={form.nume}
-                onChange={(e) => setForm({ ...form, nume: e.target.value })}
-                className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
-              style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
-            />
+            {/* Scrollable content wrapper */}
+            <div className="flex-1 min-h-0">
+              <div className="h-full overflow-y-auto px-6 space-y-5 pb-4">
+                <input
+                  autoFocus
+                  placeholder="Nume complet"
+                  value={form.nume}
+                  onChange={(e) => setForm({ ...form, nume: e.target.value })}
+                  className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                />
 
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
-                Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {ROLURI_LISTA.map((r) => {
-                  const sel = form.roluri.includes(r);
-                  return (
-                    <button key={r} onClick={() => toggleRol(r)}
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
-                      style={sel
-                        ? { backgroundColor: theme.accent, color: theme.accentFg }
-                        : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
-                      {sel && <span className="text-xs">✓</span>}
-                      {r}
-                    </button>
-                  );
-                })}
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                    Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {ROLURI_LISTA.map((r) => {
+                      const sel = form.roluri.includes(r);
+                      return (
+                        <button key={r} onClick={() => toggleRol(r)}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
+                          style={sel
+                            ? { backgroundColor: theme.accent, color: theme.accentFg }
+                            : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
+                          {sel && <span className="text-xs">✓</span>}
+                          {r}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {form.roluri.length === 0 && (
+                    <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
+                  )}
+                </div>
               </div>
-              {form.roluri.length === 0 && (
-                <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
-              )}
-            </div>
             </div>
 
             {/* Save — fixed la baza sheet-ului */}
