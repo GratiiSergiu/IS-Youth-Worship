@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick } from 'lucide-react';
+import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick, ArrowLeft } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 export const ROLURI_LISTA = [
@@ -34,18 +34,31 @@ export default function Echipa({ membri, onUpdate }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ nume: '', roluri: [] });
+  const [formStep, setFormStep] = useState(1);
 
   const openAdd = () => {
     setForm({ nume: '', roluri: [] });
     setEditId(null);
+    setFormStep(1);
     setShowForm(true);
   };
 
   const openEdit = (m) => {
     setForm({ nume: m.nume, roluri: m.roluri ?? (m.rol ? [m.rol] : []) });
     setEditId(m.id);
+    setFormStep(1);
     setShowForm(true);
   };
+
+  const closeForm = () => {
+    setShowForm(false);
+  }
+
+  const nextStep = () => {
+    if (form.nume.trim()) setFormStep(2);
+  }
+
+  const prevStep = () => setFormStep(1);
 
   const toggleRol = (r) => {
     setForm((f) => ({
@@ -130,27 +143,31 @@ export default function Echipa({ membri, onUpdate }) {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
-          onClick={() => setShowForm(false)}>
+          onClick={closeForm}>
           <div className="w-full rounded-t-3xl flex flex-col anim-sheet"
-            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '88vh' }}
+            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '90vh' }}
             onClick={(e) => e.stopPropagation()}>
 
-            {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
             </div>
 
-            {/* Header — fixed */}
             <div className="flex items-center justify-between px-6 pb-3 shrink-0">
+              <div className="w-8">
+                {formStep === 2 &&
+                  <button onClick={prevStep} className='p-1.5 -ml-1.5 rounded-lg' style={{ color: theme.muted }}><ArrowLeft size={20} /></button>
+                }
+              </div>
               <p className="font-bold text-base" style={{ color: theme.text }}>
                 {editId ? 'Editează Membru' : 'Adaugă Membru'}
               </p>
-              <button onClick={() => setShowForm(false)} style={{ color: theme.muted }}><X size={20} /></button>
+              <div className="w-8 flex justify-end">
+                <button onClick={closeForm} className='p-1.5 -mr-1.5 rounded-lg' style={{ color: theme.muted }}><X size={20} /></button>
+              </div>
             </div>
 
-            {/* Scrollable content wrapper */}
-            <div className="flex-1 min-h-0">
-              <div className="h-full overflow-y-auto px-6 space-y-5 pb-4">
+            {formStep === 1 &&
+              <div className='px-6 pb-4 space-y-4'>
                 <input
                   autoFocus
                   placeholder="Nume complet"
@@ -159,42 +176,53 @@ export default function Echipa({ membri, onUpdate }) {
                   className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
                   style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
                 />
-
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
-                    Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {ROLURI_LISTA.map((r) => {
-                      const sel = form.roluri.includes(r);
-                      return (
-                        <button key={r} onClick={() => toggleRol(r)}
-                          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
-                          style={sel
-                            ? { backgroundColor: theme.accent, color: theme.accentFg }
-                            : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
-                          {sel && <span className="text-xs">✓</span>}
-                          {r}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {form.roluri.length === 0 && (
-                    <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
-                  )}
-                </div>
+                <button onClick={nextStep}
+                  disabled={!form.nume.trim()}
+                  className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
+                  style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+                  Continuă
+                </button>
               </div>
-            </div>
+            }
 
-            {/* Save — fixed la baza sheet-ului */}
-            <div className="px-6 py-4 shrink-0" style={{ borderTop: `1px solid ${theme.border}` }}>
-              <button onClick={save}
-                disabled={!form.nume.trim() || form.roluri.length === 0}
-                className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
-                style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
-                Salvează
-              </button>
-            </div>
+            {formStep === 2 &&
+              <>
+                <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-4 min-h-0">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                      Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ROLURI_LISTA.map((r) => {
+                        const sel = form.roluri.includes(r);
+                        return (
+                          <button key={r} onClick={() => toggleRol(r)}
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
+                            style={sel
+                              ? { backgroundColor: theme.accent, color: theme.accentFg }
+                              : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
+                            {sel && <span className="text-xs">✓</span>}
+                            {r}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {form.roluri.length === 0 && (
+                      <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="px-6 py-4 shrink-0" style={{ borderTop: `1px solid ${theme.border}` }}>
+                  <button onClick={save}
+                    disabled={!form.nume.trim() || form.roluri.length === 0}
+                    className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
+                    style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+                    Salvează
+                  </button>
+                </div>
+              </>
+            }
           </div>
         </div>
       )}
