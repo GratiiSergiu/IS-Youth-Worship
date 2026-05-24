@@ -149,7 +149,7 @@ export default function Echipa({ membri, onUpdate }) {
             </div>
 
             {/* Scrollable content */}
-            <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-4">
+            <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-4 min-h-0">
               <input
                 autoFocus
                 placeholder="Nume complet"
