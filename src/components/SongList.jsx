@@ -175,7 +175,7 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
                 </button>
               </div>
               {importError && <p className="text-rose-400 text-xs px-1">{importError}</p>}
-              {form.versuri && <p className="text-green-400 text-xs px-1">Conținut preluat — verifică datele de mai jos.</p>}
+              {form.versuri && <p className="text-xs px-1" style={{ color: '#a5b4fc' }}>Conținut preluat — verifică datele de mai jos.</p>}
             </div>
           )}
 

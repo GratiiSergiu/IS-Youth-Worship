@@ -247,7 +247,7 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                         {song.titlu}
                       </span>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
-                        style={{ backgroundColor: '#4ade8025', color: '#4ade80' }}>
+                        style={{ backgroundColor: theme.accent + '25', color: theme.accent }}>
                         ×{count}
                       </span>
                     </button>
@@ -259,7 +259,7 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
             {/* Rare / forgotten songs */}
             <div>
               <div className="flex items-center gap-1.5 mb-2">
-                <Clock size={14} style={{ color: '#fb923c' }} />
+                <Clock size={14} style={{ color: '#f43f5e' }} />
                 <span className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.muted }}>
                   Cântări Rare / Uitate
                 </span>
@@ -276,7 +276,7 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                         {song.titlu}
                       </span>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
-                        style={{ backgroundColor: '#fb923c25', color: '#fb923c' }}>
+                        style={{ backgroundColor: '#f43f5e25', color: '#f43f5e' }}>
                         {count === 0 ? 'niciodată' : `×${count}`}
                       </span>
                     </div>

@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { Music, Radio } from 'lucide-react';
+import { Music } from 'lucide-react';
 import SongViewer from './SongViewer';
+import { useSettings } from '../contexts/SettingsContext';
 
 export default function LiveMode({ setlist }) {
+  const { theme } = useSettings();
   const [viewingIndex, setViewingIndex] = useState(null);
   const songs = setlist?.songs || [];
 
   if (songs.length === 0) {
     return (
       <div className="pb-24 px-4 pt-8 max-w-md mx-auto flex flex-col items-center justify-center min-h-[60vh]">
-        <Music size={56} className="text-slate-800 mb-4" />
-        <p className="text-slate-500 text-center leading-relaxed">
+        <Music size={56} className="mb-4" style={{ color: theme.border }} />
+        <p className="text-center leading-relaxed" style={{ color: theme.muted }}>
           Nu există program salvat.<br />
-          Mergi la <span className="text-yellow-500 font-semibold">Planificare</span> și creează un setlist.
+          Mergi la <span className="font-semibold" style={{ color: theme.accent }}>Planificare</span> și creează un setlist.
         </p>
       </div>
     );
@@ -35,8 +37,9 @@ export default function LiveMode({ setlist }) {
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-bold text-white">Pe Scenă</h2>
-        <span className="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-medium">
+        <h2 className="text-xl font-bold" style={{ color: theme.text }}>Pe Scenă</h2>
+        <span className="text-xs px-3 py-1 rounded-full font-medium border"
+          style={{ backgroundColor: theme.surface, color: theme.muted, borderColor: theme.border }}>
           {setlist?.eventName || 'Fără eveniment'}
         </span>
       </div>
@@ -46,20 +49,24 @@ export default function LiveMode({ setlist }) {
           <button
             key={index}
             onClick={() => setViewingIndex(index)}
-            className="w-full text-left bg-slate-900 rounded-2xl p-4 border border-slate-800 transition active:scale-[0.98] hover:border-slate-700 shadow-sm"
+            className="w-full text-left rounded-2xl p-4 border transition active:scale-[0.98] shadow-sm"
+            style={{ backgroundColor: theme.surface, borderColor: theme.border }}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <span className="text-[10px] text-slate-600 font-mono font-bold tracking-wider block mb-1">
+                <span className="text-[10px] font-mono font-bold tracking-wider block mb-1"
+                  style={{ color: theme.muted }}>
                   #{String(index + 1).padStart(2, '0')}
                 </span>
-                <h3 className="font-bold text-white text-lg truncate">{song.titlu}</h3>
-                <p className="text-sm text-slate-400 truncate">{song.autor}</p>
+                <h3 className="font-bold text-lg truncate" style={{ color: theme.text }}>{song.titlu}</h3>
+                <p className="text-sm truncate" style={{ color: theme.muted }}>{song.autor}</p>
               </div>
-              <div className="bg-slate-800 px-3.5 py-2 rounded-xl shrink-0 text-center">
-                <span className="text-yellow-400 font-mono font-bold text-xl block leading-none">{song.selectedKey}</span>
+              <div className="px-3.5 py-2 rounded-xl shrink-0 text-center"
+                style={{ backgroundColor: theme.bg }}>
+                <span className="font-mono font-bold text-xl block leading-none"
+                  style={{ color: theme.chord }}>{song.selectedKey}</span>
                 {song.selectedKey !== song.originalKey && (
-                  <span className="text-[10px] text-slate-500 block mt-1">{song.originalKey}</span>
+                  <span className="text-[10px] block mt-1" style={{ color: theme.muted }}>{song.originalKey}</span>
                 )}
               </div>
             </div>
