@@ -49,36 +49,36 @@ export default function RepetitiiCalendar({ repetitii, onSelectDate }) {
   };
 
   return (
-    <div>
-      <div class="flex items-center justify-between mb-4">
+    <div className="w-72">
+      <div className="flex items-center justify-between mb-3">
         <button
           onClick={prevMonth}
-          class="p-2 rounded-xl active:scale-90 transition"
+          className="p-2 rounded-xl active:scale-90 transition"
           style={{ backgroundColor: theme.bg, color: theme.muted }}
         >
           <ChevronLeft size={18} />
         </button>
-        <span class="font-bold text-base" style={{ color: theme.text }}>
+        <span className="font-bold text-base" style={{ color: theme.text }}>
           {MONTHS_RO[viewMonth]} {viewYear}
         </span>
         <button
           onClick={nextMonth}
-          class="p-2 rounded-xl active:scale-90 transition"
+          className="p-2 rounded-xl active:scale-90 transition"
           style={{ backgroundColor: theme.bg, color: theme.muted }}
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      <div class="grid grid-cols-7 mb-1">
+      <div className="grid grid-cols-7 mb-1">
         {DAYS_SHORT.map(d => (
-          <div key={d} class="text-center text-[11px] font-bold py-1 uppercase tracking-wide" style={{ color: theme.muted }}>
+          <div key={d} className="text-center text-[11px] font-bold py-1 uppercase tracking-wide" style={{ color: theme.muted }}>
             {d}
           </div>
         ))}
       </div>
 
-      <div class="grid grid-cols-7 gap-y-1">
+      <div className="grid grid-cols-7 gap-y-1">
         {cells.map((day, i) => {
           if (!day) return <div key={`e-${i}`} />;
           const dateStr = toDateStr(viewYear, viewMonth, day);
@@ -89,17 +89,17 @@ export default function RepetitiiCalendar({ repetitii, onSelectDate }) {
             <button
               key={day}
               onClick={() => onSelectDate(dateStr)}
-              class="relative flex flex-col items-center justify-center h-9 rounded-xl transition-all"
+              className="relative flex flex-col items-center justify-center h-9 rounded-xl transition-all"
               style={{
                 backgroundColor: isToday ? theme.accent + '30' : 'transparent',
                 color: isToday ? theme.accent : theme.text,
                 fontWeight: isToday || hasRepetitii ? '700' : '400',
               }}
             >
-              <span class="text-sm leading-none">{day}</span>
+              <span className="text-sm leading-none">{day}</span>
               {hasRepetitii && (
                 <span
-                  class="absolute bottom-1 w-1.5 h-1.5 rounded-full"
+                  className="absolute bottom-1 w-1.5 h-1.5 rounded-full"
                   style={{ backgroundColor: theme.accent }}
                 />
               )}

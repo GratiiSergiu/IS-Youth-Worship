@@ -6,6 +6,7 @@ import RepetitiiCalendar from './RepetitiiCalendar';
 export default function Repetitii({ repetitii, membri, onUpdate }) {
   const { theme } = useSettings();
   const [selectedDate, setSelectedDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const addRepetitie = (date) => {
     const newRepetitie = {
@@ -35,18 +36,40 @@ export default function Repetitii({ repetitii, membri, onUpdate }) {
     onUpdate(updatedRepetitii);
   };
 
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setShowCalendar(false);
+  };
+
   const selectedRepetitie = repetitii.find(r => r.date === selectedDate);
 
   return (
-    <div class="space-y-4">
-      <RepetitiiCalendar repetitii={repetitii} onSelectDate={setSelectedDate} />
+    <div className="space-y-4 px-4">
+      <button 
+        onClick={() => setShowCalendar(true)}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition"
+        style={{ backgroundColor: theme.surface, color: theme.text, border: `1px solid ${theme.border}` }}
+      >
+        <Calendar size={16} /> Selectează o dată
+      </button>
+
+      {showCalendar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+             onClick={() => setShowCalendar(false)}>
+          <div className="bg-white rounded-lg shadow-lg p-4" 
+               style={{ backgroundColor: theme.surface }} 
+               onClick={(e) => e.stopPropagation()}>
+            <RepetitiiCalendar repetitii={repetitii} onSelectDate={handleSelectDate} />
+          </div>
+        </div>
+      )}
 
       {selectedDate && (
-        <div class="p-3 rounded-xl" style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-          <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-2">
+        <div className="p-3 rounded-xl" style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
               <Calendar size={16} style={{ color: theme.muted }} />
-              <p class="font-bold" style={{ color: theme.text }}>
+              <p className="font-bold" style={{ color: theme.text }}>
                 {new Date(selectedDate + 'T12:00:00').toLocaleDateString('ro-RO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
@@ -56,28 +79,28 @@ export default function Repetitii({ repetitii, membri, onUpdate }) {
           </div>
 
           {selectedRepetitie ? (
-            <div class="space-y-2">
-              <h4 class="text-xs font-bold uppercase" style={{ color: theme.muted }}>Participanti:</h4>
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase" style={{ color: theme.muted }}>Participanti:</h4>
               {membri.map(membru => (
-                <div key={membru.id} class="flex items-center justify-between p-2 rounded-lg" style={{ backgroundColor: theme.bg }}>
-                    <p class="text-sm font-semibold" style={{ color: theme.text }}>{membru.nume}</p>
+                <div key={membru.id} className="flex items-center justify-between p-2 rounded-lg" style={{ backgroundColor: theme.bg }}>
+                    <p className="text-sm font-semibold" style={{ color: theme.text }}>{membru.nume}</p>
                     <input
                       type="checkbox"
                       checked={selectedRepetitie.prezenti.includes(membru.id)}
                       onChange={() => togglePrezenta(selectedRepetitie.id, membru.id)}
-                      class="h-5 w-5 rounded-md accent-teal-500"
+                      className="h-5 w-5 rounded-md accent-teal-500"
                     />
                 </div>
               ))}
-              <div class="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2">
                   <Users size={16} style={{ color: theme.muted }} />
-                  <p class="text-sm" style={{ color: theme.muted }}>{selectedRepetitie.prezenti.length} / {membri.length} participanti</p>
+                  <p className="text-sm" style={{ color: theme.muted }}>{selectedRepetitie.prezenti.length} / {membri.length} participanti</p>
               </div>
             </div>
           ) : (
             <button
               onClick={() => addRepetitie(selectedDate)}
-              class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition"
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition"
               style={{ backgroundColor: theme.accent, color: theme.accentFg }}
             >
               <Plus size={16} /> Adaugă repetiție
