@@ -182,7 +182,7 @@ export default function App() {
           <p className="text-sm" style={{ color: theme.muted }}>Se încarcă repertoriul…</p>
         </div>
       ) : (
-        <>
+        <div key={activeTab} className="anim-page">
           {activeTab === 'repertoriu' && (
             <SongList
               songs={songs}
@@ -215,7 +215,7 @@ export default function App() {
               onDeleteProgram={handleDeleteProgram}
             />
           )}
-        </>
+        </div>
       )}
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />

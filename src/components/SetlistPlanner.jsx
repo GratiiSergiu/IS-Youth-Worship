@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle, Users, Repeat2, SlidersHorizontal } from 'lucide-react';
 import SongViewer from './SongViewer';
+import Echipa from './Echipa';
+import Repetitii from './Repetitii';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 function todayString() {
   const d = new Date();
@@ -12,6 +15,8 @@ function genId() {
   return String(Date.now());
 }
 
+const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
 export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram }) {
   const { theme } = useSettings();
   const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
@@ -19,7 +24,11 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
   const [addingEvent, setAddingEvent] = useState(false);
   const [newEventName, setNewEventName] = useState('');
   const [eventDate, setEventDate] = useState(todayString);
-  const [saveState, setSaveState] = useState('idle'); // idle | saving | saved | error
+  const [saveState, setSaveState] = useState('idle');
+  const [subTab, setSubTab] = useState('program');
+  const [aranjamentIndex, setAranjamentIndex] = useState(null);
+  const [membri, setMembri] = useLocalStorage('isworship_echipa', []);
+  const [repetitii, setRepetitii] = useLocalStorage('isworship_repetitii', []);
 
   const activeEvent = setlists.find((e) => e.id === activeId) ?? setlists[0];
   const selectedSongs = activeEvent?.songs ?? [];
@@ -122,8 +131,42 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
     );
   }
 
+  const aranjamentSong = aranjamentIndex !== null ? selectedSongs[aranjamentIndex] : null;
+  const updateAranjament = (patch) => {
+    const next = [...selectedSongs];
+    next[aranjamentIndex] = { ...next[aranjamentIndex], aranjament: { ...(next[aranjamentIndex].aranjament ?? {}), ...patch } };
+    setEventSongs(next);
+  };
+  const voceListi = membri.filter((m) => m.activ && m.voce);
+
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
+
+      {/* Sub-tabs */}
+      <div className="flex gap-1 mb-4 p-1 rounded-2xl" style={{ backgroundColor: theme.surface }}>
+        {[
+          { id: 'program',   label: 'Program',   Icon: ListMusic },
+          { id: 'repetitii', label: 'Repetiții', Icon: Repeat2 },
+          { id: 'echipa',    label: 'Echipă',    Icon: Users },
+        ].map(({ id, label, Icon }) => (
+          <button key={id} onClick={() => setSubTab(id)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition"
+            style={subTab === id
+              ? { backgroundColor: theme.accent, color: theme.accentFg }
+              : { color: theme.muted }}>
+            <Icon size={13} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Echipă ── */}
+      {subTab === 'echipa' && <Echipa membri={membri} onUpdate={setMembri} />}
+
+      {/* ── Repetiții ── */}
+      {subTab === 'repetitii' && <Repetitii repetitii={repetitii} membri={membri} onUpdate={setRepetitii} />}
+
+      {/* ── Program ── */}
+      {subTab === 'program' && <>
 
       {/* Event tabs */}
       <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
@@ -245,6 +288,11 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
                   </div>
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => setAranjamentIndex(index)}
+                    className="p-1.5 rounded-lg active:scale-90 transition relative"
+                    style={{ backgroundColor: item.aranjament?.voceaLead ? theme.accent + '22' : theme.bg, color: item.aranjament?.voceaLead ? theme.accent : theme.muted }}>
+                    <SlidersHorizontal size={14} />
+                  </button>
                   <button onClick={() => moveSong(index, -1)} className="p-1.5 rounded-lg active:scale-90 transition" style={{ backgroundColor: theme.bg, color: theme.muted }}>
                     <ArrowUp size={14} />
                   </button>
@@ -282,6 +330,87 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
         {saveState === 'idle' || saveState === 'error' ? <Save size={18} /> : null}
         {saveState === 'saving' ? 'Se salvează…' : saveState === 'saved' ? 'Program salvat!' : 'Salvează Programul'}
       </button>
+
+      </>}
+
+      {/* ── Aranjament modal ── */}
+      {aranjamentSong && (
+        <div className="fixed inset-0 z-50 flex items-end anim-overlay"
+          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+          onClick={() => setAranjamentIndex(null)}>
+          <div className="w-full rounded-t-3xl max-h-[85vh] flex flex-col anim-sheet"
+            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
+            </div>
+            <div className="flex items-start justify-between px-5 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <div>
+                <p className="font-bold text-base" style={{ color: theme.text }}>Aranjament</p>
+                <p className="text-xs mt-0.5" style={{ color: theme.muted }}>{aranjamentSong.titlu}</p>
+              </div>
+              <button onClick={() => setAranjamentIndex(null)} className="p-2 rounded-xl" style={{ color: theme.muted }}><X size={18} /></button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+              {/* Voce lead */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Voce Lead</label>
+                <select
+                  value={aranjamentSong.aranjament?.voceaLead ?? ''}
+                  onChange={(e) => updateAranjament({ voceaLead: e.target.value })}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
+                  <option value="">— Neselectat —</option>
+                  {voceListi.map((m) => <option key={m.id} value={m.nume}>{m.nume}</option>)}
+                  <option value="__custom__">Alt…</option>
+                </select>
+                {aranjamentSong.aranjament?.voceaLead === '__custom__' && (
+                  <input placeholder="Nume voce lead"
+                    className="w-full mt-2 rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                    style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                    onChange={(e) => updateAranjament({ voceaLead: e.target.value })} />
+                )}
+              </div>
+
+              {/* Cine începe prima strofă */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Cine începe prima strofă</label>
+                <select
+                  value={aranjamentSong.aranjament?.incepe ?? ''}
+                  onChange={(e) => updateAranjament({ incepe: e.target.value })}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
+                  <option value="">— Neselectat —</option>
+                  {membri.filter((m) => m.activ).map((m) => <option key={m.id} value={m.nume}>{m.nume} — {m.rol}</option>)}
+                </select>
+              </div>
+
+              {/* Intro instrument */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Instrument Intro</label>
+                <select
+                  value={aranjamentSong.aranjament?.introInstrument ?? ''}
+                  onChange={(e) => updateAranjament({ introInstrument: e.target.value })}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
+                  <option value="">— Neselectat —</option>
+                  {membri.filter((m) => m.activ).map((m) => <option key={m.id} value={`${m.rol} (${m.nume})`}>{m.rol} — {m.nume}</option>)}
+                </select>
+              </div>
+
+              {/* Note */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Note adiționale</label>
+                <textarea rows={3} placeholder="Ex: refrenul se repetă de 2 ori, bridge a capella…"
+                  value={aranjamentSong.aranjament?.note ?? ''}
+                  onChange={(e) => updateAranjament({ note: e.target.value })}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none resize-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

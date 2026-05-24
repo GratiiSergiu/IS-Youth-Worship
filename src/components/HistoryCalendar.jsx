@@ -292,12 +292,12 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
       {/* ── Song detail bottom sheet ── */}
       {selectedSong && (
         <div
-          className="fixed inset-0 z-50 flex items-end"
+          className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setSelectedSong(null)}
         >
           <div
-            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl"
+            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl anim-sheet"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={e => e.stopPropagation()}
           >
@@ -347,12 +347,12 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
       {/* ── Day detail bottom sheet ── */}
       {selectedDay && (
         <div
-          className="fixed inset-0 z-50 flex items-end"
+          className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl"
+            className="w-full rounded-t-3xl min-h-[75vh] max-h-[90vh] flex flex-col shadow-2xl anim-sheet"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={e => e.stopPropagation()}
           >
