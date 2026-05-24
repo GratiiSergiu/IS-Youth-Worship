@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick, ArrowLeft } from 'lucide-react';
+import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick, ArrowLeft, Check } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 export const ROLURI_LISTA = [
@@ -192,18 +192,34 @@ export default function Echipa({ membri, onUpdate }) {
                     <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
                       Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
                       {ROLURI_LISTA.map((r) => {
                         const sel = form.roluri.includes(r);
                         return (
-                          <button key={r} onClick={() => toggleRol(r)}
-                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
-                            style={sel
-                              ? { backgroundColor: theme.accent, color: theme.accentFg }
-                              : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
-                            {sel && <span className="text-xs">✓</span>}
-                            {r}
-                          </button>
+                          <label key={r} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer"
+                            style={{
+                              backgroundColor: sel ? theme.accent + '20' : theme.bg,
+                              border: `1px solid ${sel ? theme.accent + '40' : theme.border}`
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={sel}
+                              onChange={() => toggleRol(r)}
+                              className="hidden"
+                            />
+                            <div className="w-5 h-5 rounded-md border flex items-center justify-center"
+                              style={{
+                                borderColor: sel ? theme.accent : theme.muted,
+                                backgroundColor: sel ? theme.accent : 'transparent'
+                              }}
+                            >
+                              {sel && <Check size={14} color={theme.accentFg} />}
+                            </div>
+                            <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              {r}
+                            </span>
+                          </label>
                         );
                       })}
                     </div>
