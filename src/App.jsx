@@ -182,7 +182,7 @@ export default function App() {
           <p className="text-sm" style={{ color: theme.muted }}>Se încarcă repertoriul…</p>
         </div>
       ) : (
-        <div key={activeTab} className="anim-page">
+        <div key={activeTab}>
           {activeTab === 'repertoriu' && (
             <SongList
               songs={songs}
