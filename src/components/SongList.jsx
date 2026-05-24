@@ -116,10 +116,6 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
       <SongViewer
         song={{ ...song, originalKey: song.tonalitate, selectedKey: song.tonalitate }}
         onClose={() => setViewingIndex(null)}
-        onNext={() => setViewingIndex((i) => Math.min(flatSongs.length - 1, i + 1))}
-        onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
-        hasNext={viewingIndex < flatSongs.length - 1}
-        hasPrev={viewingIndex > 0}
         onUpdate={onUpdate}
       />
     );

@@ -259,8 +259,8 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
         </div>
       )}
 
-      {/* Footer nav (scroll mode) */}
-      {!editMode && !isPaged && (
+      {/* Footer nav (scroll mode) — only in setlist context */}
+      {!editMode && !isPaged && onNext && (
         <div className="flex justify-between items-center px-4 py-3 border-t shrink-0"
           style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
           <button onClick={onPrev} disabled={!hasPrev}
