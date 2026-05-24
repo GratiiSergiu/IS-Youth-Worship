@@ -106,20 +106,18 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
   const lyricStyle = { ...fontStyle, fontSize: size.lyric, color: theme.text };
   const chordStyle = { ...fontStyle, fontSize: size.chord, color: theme.chord };
 
-  function renderLines(linesToRender) {
-    return linesToRender.map((line) => {
-      const hasChords = line.parts.some((p) => p.type === 'chord');
-      const lyricRow = buildLyricRow(line.parts);
-      if (!hasChords || !showChords) {
-        return <div key={line.lineIndex} style={lyricStyle} className="leading-snug">{lyricRow || ' '}</div>;
-      }
-      return (
-        <div key={line.lineIndex} className="mb-1">
-          <div style={{ ...chordStyle, fontWeight: 700 }} className="leading-tight whitespace-pre">{buildChordRow(line.parts)}</div>
-          <div style={lyricStyle} className="leading-snug">{lyricRow || ' '}</div>
-        </div>
-      );
-    });
+  function renderLine(line) {
+    const hasChords = line.parts.some((p) => p.type === 'chord');
+    const lyricRow = buildLyricRow(line.parts);
+    if (!hasChords || !showChords) {
+      return <div key={line.lineIndex} style={lyricStyle} className="leading-snug">{lyricRow || ' '}</div>;
+    }
+    return (
+      <div key={line.lineIndex} className="mb-1">
+        <div style={{ ...chordStyle, fontWeight: 700 }} className="leading-tight whitespace-pre">{buildChordRow(line.parts)}</div>
+        <div style={lyricStyle} className="leading-snug">{lyricRow || ' '}</div>
+      </div>
+    );
   }
 
   return (
@@ -226,7 +224,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
         /* ── Paginat ── */
         <div className="flex-1 flex flex-col">
           <div className="flex-1 px-5 py-6 flex flex-col justify-center">
-            <div>{renderLines(sections[pageIndex] ?? [])}</div>
+            <div>{(sections[pageIndex] ?? []).map(renderLine)}</div>
           </div>
           <div className="flex items-center justify-between px-6 py-3 border-t"
             style={{ borderColor: theme.border }}>
@@ -251,10 +249,11 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
         /* ── Continuu ── */
         <div className="flex-1 overflow-y-auto px-5 py-6">
           <div>
-            {lines.map((line) => {
-              if (line.parts.length === 0) return <div key={line.lineIndex} className="h-5" />;
-              return renderLines([line]);
-            })}
+            {lines.map((line) => (
+              line.parts.length === 0
+                ? <div key={line.lineIndex} className="h-5" />
+                : renderLine(line)
+            ))}
           </div>
         </div>
       )}
