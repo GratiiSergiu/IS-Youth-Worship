@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ArrowUp, ArrowDown, Trash2, Save, Calendar, ListMusic, ChevronRight, Plus, X, CheckCircle2, Loader2, AlertCircle, Users, Repeat2, SlidersHorizontal } from 'lucide-react';
 import SongViewer from './SongViewer';
-import Echipa from './Echipa';
 import Repetitii from './Repetitii';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -14,8 +13,6 @@ function todayString() {
 function genId() {
   return String(Date.now());
 }
-
-const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
 export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram }) {
   const { theme } = useSettings();
@@ -107,6 +104,16 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
     }
   };
 
+  const aranjamentSong = aranjamentIndex !== null ? selectedSongs[aranjamentIndex] : null;
+  const updateAranjament = (patch) => {
+    const next = [...selectedSongs];
+    next[aranjamentIndex] = { ...next[aranjamentIndex], aranjament: { ...(next[aranjamentIndex].aranjament ?? {}), ...patch } };
+    setEventSongs(next);
+  };
+  const voceListi = membri.filter((m) => m.activ && (m.roluri ?? []).includes('Vocalist'));
+
+  // Decouple SongViewer from the main planner render flow.
+  // This ensures it's either the viewer OR the planner, never both.
   if (viewingIndex !== null && selectedSongs[viewingIndex]) {
     const item = selectedSongs[viewingIndex];
     const masterSong = songs.find((s) => s.id === item.songId);
@@ -130,14 +137,6 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
       />
     );
   }
-
-  const aranjamentSong = aranjamentIndex !== null ? selectedSongs[aranjamentIndex] : null;
-  const updateAranjament = (patch) => {
-    const next = [...selectedSongs];
-    next[aranjamentIndex] = { ...next[aranjamentIndex], aranjament: { ...(next[aranjamentIndex].aranjament ?? {}), ...patch } };
-    setEventSongs(next);
-  };
-  const voceListi = membri.filter((m) => m.activ && (m.roluri ?? []).includes('Vocalist'));
 
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">
