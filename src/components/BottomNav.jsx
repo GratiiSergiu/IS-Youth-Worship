@@ -1,9 +1,10 @@
-import { Music, CalendarDays, FolderOpen, History } from 'lucide-react';
+import { Music, CalendarDays, FolderOpen, History, UserCheck } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const tabs = [
   { id: 'repertoriu',  label: 'Repertoriu',  icon: Music },
   { id: 'planificare', label: 'Planificare',  icon: CalendarDays },
+  { id: 'repetitii',   label: 'Repetiții',    icon: UserCheck },
   { id: 'colectii',   label: 'Colecții',     icon: FolderOpen },
   { id: 'istoric',    label: 'Istoric',      icon: History },
 ];

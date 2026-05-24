@@ -12,7 +12,7 @@ function genId() {
   return String(Date.now());
 }
 
-export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram, membri, onUpdateMembri }) {
+export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUpdateSong, onSaveProgram }) {
   const { theme } = useSettings();
   const [activeId, setActiveId] = useState(setlists[0]?.id ?? '1');
   const [viewingIndex, setViewingIndex] = useState(null);
@@ -105,7 +105,6 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
     next[aranjamentIndex] = { ...next[aranjamentIndex], aranjament: { ...(next[aranjamentIndex].aranjament ?? {}), ...patch } };
     setEventSongs(next);
   };
-  const voceListi = membri.filter((m) => m.activ && (m.roluri ?? []).includes('Vocalist'));
 
   if (viewingIndex !== null && selectedSongs[viewingIndex]) {
     const item = selectedSongs[viewingIndex];
@@ -315,61 +314,7 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
               <button onClick={() => setAranjamentIndex(null)} className="p-2 rounded-xl" style={{ color: theme.muted }}><X size={18} /></button>
             </div>
             <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
-              {/* Voce lead */}
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Voce Lead</label>
-                <select
-                  value={aranjamentSong.aranjament?.voceaLead ?? ''}
-                  onChange={(e) => updateAranjament({ voceaLead: e.target.value })}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
-                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-                  <option value="">— Neselectat —</option>
-                  {voceListi.map((m) => <option key={m.id} value={m.nume}>{m.nume}</option>)}
-                  <option value="__custom__">Alt…</option>
-                </select>
-                {aranjamentSong.aranjament?.voceaLead === '__custom__' && (
-                  <input placeholder="Nume voce lead"
-                    className="w-full mt-2 rounded-xl px-3 py-2.5 text-sm focus:outline-none"
-                    style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
-                    onChange={(e) => updateAranjament({ voceaLead: e.target.value })} />
-                )}
-              </div>
-
-              {/* Cine începe prima strofă */}
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Cine începe prima strofă</label>
-                <select
-                  value={aranjamentSong.aranjament?.incepe ?? ''}
-                  onChange={(e) => updateAranjament({ incepe: e.target.value })}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
-                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-                  <option value="">— Neselectat —</option>
-                  {membri.filter((m) => m.activ).map((m) => <option key={m.id} value={m.nume}>{m.nume} — {m.rol}</option>)}
-                </select>
-              </div>
-
-              {/* Intro instrument */}
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Instrument Intro</label>
-                <select
-                  value={aranjamentSong.aranjament?.introInstrument ?? ''}
-                  onChange={(e) => updateAranjament({ introInstrument: e.target.value })}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
-                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-                  <option value="">— Neselectat —</option>
-                  {membri.filter((m) => m.activ).map((m) => <option key={m.id} value={`${m.rol} (${m.nume})`}>{m.rol} — {m.nume}</option>)}
-                </select>
-              </div>
-
-              {/* Note */}
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: theme.muted }}>Note adiționale</label>
-                <textarea rows={3} placeholder="Ex: refrenul se repetă de 2 ori, bridge a capella…"
-                  value={aranjamentSong.aranjament?.note ?? ''}
-                  onChange={(e) => updateAranjament({ note: e.target.value })}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none resize-none"
-                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }} />
-              </div>
+              
             </div>
           </div>
         </div>

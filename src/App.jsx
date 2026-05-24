@@ -9,6 +9,7 @@ import SetlistPlanner from './components/SetlistPlanner';
 import Collections from './components/Collections';
 import Settings from './components/Settings';
 import HistoryCalendar from './components/HistoryCalendar';
+import Repetitii from './components/Repetitii';
 import SplashScreen from './components/SplashScreen';
 
 export default function App() {
@@ -19,7 +20,6 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [setlists, setSetlists] = useLocalStorage('isworship_setlists', () => {
-    // Migrate old single-setlist format
     const old = localStorage.getItem('isworship_setlist');
     if (old) {
       try {
@@ -34,6 +34,8 @@ export default function App() {
     ];
   });
   const [collections, setCollections] = useLocalStorage('isworship_collections', []);
+  const [repetitii, setRepetitii] = useLocalStorage('isworship_repetitii', []);
+  const [membri] = useLocalStorage('isworship_membri', []);
   const [istoricData, setIstoricData] = useState([]);
   const { theme } = useSettings();
 
@@ -206,6 +208,13 @@ export default function App() {
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
+            />
+          )}
+          {activeTab === 'repetitii' && (
+            <Repetitii
+              repetitii={repetitii}
+              membri={membri}
+              onUpdate={setRepetitii}
             />
           )}
           {activeTab === 'istoric' && (
