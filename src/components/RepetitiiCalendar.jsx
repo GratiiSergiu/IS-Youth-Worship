@@ -49,7 +49,7 @@ export default function RepetitiiCalendar({ repetitii, onSelectDate }) {
   };
 
   return (
-    <div className="rounded-2xl p-4 border mb-4 shadow-lg" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+    <div>
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={prevMonth}
