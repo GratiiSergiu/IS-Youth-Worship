@@ -225,7 +225,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
       ) : isPaged ? (
         /* ── Paginat ── */
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-hidden px-5 py-6 flex flex-col justify-center">
+          <div className="flex-1 px-5 py-6 flex flex-col justify-center">
             <div>{renderLines(sections[pageIndex] ?? [])}</div>
           </div>
           <div className="flex items-center justify-between px-6 py-3 border-t"
