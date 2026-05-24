@@ -131,22 +131,31 @@ export default function Echipa({ membri, onUpdate }) {
         <div className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowForm(false)}>
-          <div className="w-full rounded-t-3xl p-6 space-y-5 anim-sheet"
-            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
+          <div className="w-full rounded-t-3xl flex flex-col anim-sheet"
+            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '88vh' }}
             onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
+
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
+            </div>
+
+            {/* Header — fixed */}
+            <div className="flex items-center justify-between px-6 pb-3 shrink-0">
               <p className="font-bold text-base" style={{ color: theme.text }}>
                 {editId ? 'Editează Membru' : 'Adaugă Membru'}
               </p>
               <button onClick={() => setShowForm(false)} style={{ color: theme.muted }}><X size={20} /></button>
             </div>
 
-            <input
-              autoFocus
-              placeholder="Nume complet"
-              value={form.nume}
-              onChange={(e) => setForm({ ...form, nume: e.target.value })}
-              className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
+            {/* Scrollable content */}
+            <div className="overflow-y-auto flex-1 px-6 space-y-5 pb-4">
+              <input
+                autoFocus
+                placeholder="Nume complet"
+                value={form.nume}
+                onChange={(e) => setForm({ ...form, nume: e.target.value })}
+                className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
               style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
             />
 
@@ -173,13 +182,17 @@ export default function Echipa({ membri, onUpdate }) {
                 <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
               )}
             </div>
+            </div>
 
-            <button onClick={save}
-              disabled={!form.nume.trim() || form.roluri.length === 0}
-              className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
-              style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
-              Salvează
-            </button>
+            {/* Save — fixed la baza sheet-ului */}
+            <div className="px-6 py-4 shrink-0" style={{ borderTop: `1px solid ${theme.border}` }}>
+              <button onClick={save}
+                disabled={!form.nume.trim() || form.roluri.length === 0}
+                className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
+                style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+                Salvează
+              </button>
+            </div>
           </div>
         </div>
       )}
