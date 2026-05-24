@@ -7,6 +7,7 @@ import Header from './components/Header';
 import SongList from './components/SongList';
 import SetlistPlanner from './components/SetlistPlanner';
 import Collections from './components/Collections';
+import Echipa from './components/Echipa';
 import Settings from './components/Settings';
 import HistoryCalendar from './components/HistoryCalendar';
 import SplashScreen from './components/SplashScreen';
@@ -30,10 +31,10 @@ export default function App() {
     return [
       { id: '1', eventName: 'Tineret Marți', songs: [] },
       { id: '2', eventName: 'Slujire Duminică', songs: [] },
-      { id: '3', eventName: 'Repetiții', songs: [] },
     ];
   });
   const [collections, setCollections] = useLocalStorage('isworship_collections', []);
+  const [membri, setMembri] = useLocalStorage('isworship_membri', []);
   const [istoricData, setIstoricData] = useState([]);
   const { theme } = useSettings();
 
@@ -206,6 +207,12 @@ export default function App() {
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
+            />
+          )}
+          {activeTab === 'echipa' && (
+            <Echipa
+              membri={membri}
+              onUpdate={setMembri}
             />
           )}
           {activeTab === 'istoric' && (

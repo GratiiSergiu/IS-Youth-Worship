@@ -350,7 +350,52 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
               </div>
               <button onClick={() => setAranjamentIndex(null)} className="p-2 rounded-xl" style={{ color: theme.muted }}><X size={18} /></button>
             </div>
-            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4"></div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+              <div>
+                <label className="text-xs font-semibold uppercase" style={{ color: theme.muted }}>Voce Lead</label>
+                <input
+                  type="text"
+                  placeholder="Numele persoanei"
+                  value={aranjamentSong.aranjament?.voceaLead ?? ''}
+                  onChange={(e) => updateAranjament({ voceaLead: e.target.value })}
+                  className="mt-1 w-full rounded-lg px-3 py-2 focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase" style={{ color: theme.muted }}>Tempo / Ritm</label>
+                <input
+                  type="text"
+                  placeholder="Ex: 120bpm, 4/4, Baladă"
+                  value={aranjamentSong.aranjament?.tempo ?? ''}
+                  onChange={(e) => updateAranjament({ tempo: e.target.value })}
+                  className="mt-1 w-full rounded-lg px-3 py-2 focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase" style={{ color: theme.muted }}>Structură / Ordine</label>
+                <textarea
+                  placeholder="Ex: Intro, V1, Ref, V2, Ref, Bridge, Ref x2, Outro"
+                  value={aranjamentSong.aranjament?.structura ?? ''}
+                  onChange={(e) => updateAranjament({ structura: e.target.value })}
+                  rows={4}
+                  className="mt-1 w-full rounded-lg px-3 py-2 focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase" style={{ color: theme.muted }}>Notițe</label>
+                <textarea
+                  placeholder="Orice alte detalii importante"
+                  value={aranjamentSong.aranjament?.notite ?? ''}
+                  onChange={(e) => updateAranjament({ notite: e.target.value })}
+                  rows={3}
+                  className="mt-1 w-full rounded-lg px-3 py-2 focus:outline-none"
+                  style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
