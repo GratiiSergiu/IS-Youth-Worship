@@ -137,7 +137,7 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
     next[aranjamentIndex] = { ...next[aranjamentIndex], aranjament: { ...(next[aranjamentIndex].aranjament ?? {}), ...patch } };
     setEventSongs(next);
   };
-  const voceListi = membri.filter((m) => m.activ && m.voce);
+  const voceListi = membri.filter((m) => m.activ && (m.roluri ?? []).includes('Vocalist'));
 
   return (
     <div className="pb-24 px-4 pt-2 max-w-md mx-auto">

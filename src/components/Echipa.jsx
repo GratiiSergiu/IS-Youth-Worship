@@ -1,40 +1,61 @@
 import { useState } from 'react';
-import { Plus, X, Pencil, Check, Mic2, Music, Music2, Music3, Drumstick } from 'lucide-react';
+import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
-const ROLURI = ['Voce', 'Chitară Lead', 'Chitară Ritmică', 'Bass', 'Tobe', 'Clape', 'Vioară', 'Alt instrument'];
+export const ROLURI_LISTA = [
+  'Chitară Acustică',
+  'Chitară Electrică',
+  'Chitară Bas',
+  'Tobe',
+  'Kajon',
+  'Pian',
+  'Vioară',
+  'Vocalist',
+];
 
 const ROLE_ICON = {
-  'Voce': Mic2,
-  'Chitară Lead': Music3,
-  'Chitară Ritmică': Music3,
-  'Bass': Music,
-  'Tobe': Drumstick,
-  'Clape': Music2,
-  'Vioară': Music2,
-  'Alt instrument': Music2,
+  'Vocalist':         Mic2,
+  'Chitară Acustică': Music3,
+  'Chitară Electrică':Music3,
+  'Chitară Bas':      Music,
+  'Tobe':             Drumstick,
+  'Kajon':            Drumstick,
+  'Pian':             Music2,
+  'Vioară':           Music2,
 };
+
+function primaryIcon(roluri = []) {
+  for (const r of roluri) if (ROLE_ICON[r]) return ROLE_ICON[r];
+  return Music2;
+}
 
 export default function Echipa({ membri, onUpdate }) {
   const { theme } = useSettings();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ nume: '', rol: 'Voce', voce: false });
+  const [form, setForm] = useState({ nume: '', roluri: [] });
 
   const openAdd = () => {
-    setForm({ nume: '', rol: 'Voce', voce: false });
+    setForm({ nume: '', roluri: [] });
     setEditId(null);
     setShowForm(true);
   };
 
   const openEdit = (m) => {
-    setForm({ nume: m.nume, rol: m.rol, voce: m.voce });
+    setForm({ nume: m.nume, roluri: m.roluri ?? (m.rol ? [m.rol] : []) });
     setEditId(m.id);
     setShowForm(true);
   };
 
+  const toggleRol = (r) => {
+    setForm((f) => ({
+      ...f,
+      roluri: f.roluri.includes(r) ? f.roluri.filter((x) => x !== r) : [...f.roluri, r],
+    }));
+  };
+
   const save = () => {
-    if (!form.nume.trim()) return;
+    if (!form.nume.trim() || form.roluri.length === 0) return;
     if (editId) {
       onUpdate(membri.map((m) => m.id === editId ? { ...m, ...form } : m));
     } else {
@@ -65,30 +86,40 @@ export default function Echipa({ membri, onUpdate }) {
 
       <div className="space-y-2">
         {membri.map((m) => {
-          const Icon = ROLE_ICON[m.rol] ?? Music2;
+          const roluri = m.roluri ?? (m.rol ? [m.rol] : []);
+          const Icon = primaryIcon(roluri);
           return (
-            <div key={m.id} className="flex items-center gap-3 rounded-xl px-3 py-3 border anim-pop"
+            <div key={m.id} className="rounded-xl px-3 py-3 border anim-pop"
               style={{ backgroundColor: theme.surface, borderColor: theme.border, opacity: m.activ ? 1 : 0.45 }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundImage: 'linear-gradient(135deg,#f43f5e,#6366f1)' }}>
-                <Icon size={16} color="#fff" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm truncate" style={{ color: theme.text }}>{m.nume}</p>
-                <p className="text-xs" style={{ color: theme.muted }}>{m.rol}</p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => toggle(m.id)}
-                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                  style={{ backgroundColor: m.activ ? theme.accent + '25' : theme.border, color: m.activ ? theme.accent : theme.muted }}>
-                  {m.activ ? 'Activ' : 'Inactiv'}
-                </button>
-                <button onClick={() => openEdit(m)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
-                  <Pencil size={13} />
-                </button>
-                <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg" style={{ color: '#f43f5e' }}>
-                  <X size={13} />
-                </button>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundImage: 'linear-gradient(135deg,#f43f5e,#6366f1)' }}>
+                  <Icon size={16} color="#fff" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm truncate" style={{ color: theme.text }}>{m.nume}</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {roluri.map((r) => (
+                      <span key={r} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                        style={{ backgroundColor: theme.accent + '20', color: theme.accent }}>
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => toggle(m.id)}
+                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{ backgroundColor: m.activ ? theme.accent + '25' : theme.border, color: m.activ ? theme.accent : theme.muted }}>
+                    {m.activ ? 'Activ' : 'Inactiv'}
+                  </button>
+                  <button onClick={() => openEdit(m)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
+                    <Pencil size={13} />
+                  </button>
+                  <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg" style={{ color: '#f43f5e' }}>
+                    <X size={13} />
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -100,7 +131,7 @@ export default function Echipa({ membri, onUpdate }) {
         <div className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowForm(false)}>
-          <div className="w-full rounded-t-3xl p-6 space-y-4 anim-sheet"
+          <div className="w-full rounded-t-3xl p-6 space-y-5 anim-sheet"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
@@ -109,32 +140,43 @@ export default function Echipa({ membri, onUpdate }) {
               </p>
               <button onClick={() => setShowForm(false)} style={{ color: theme.muted }}><X size={20} /></button>
             </div>
+
             <input
               autoFocus
-              placeholder="Nume"
+              placeholder="Nume complet"
               value={form.nume}
               onChange={(e) => setForm({ ...form, nume: e.target.value })}
               className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
               style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
             />
-            <select
-              value={form.rol}
-              onChange={(e) => setForm({ ...form, rol: e.target.value })}
-              className="w-full rounded-xl px-4 py-3 focus:outline-none text-sm"
-              style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}>
-              {ROLURI.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div
-                onClick={() => setForm({ ...form, voce: !form.voce })}
-                className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition"
-                style={{ borderColor: form.voce ? theme.accent : theme.border, backgroundColor: form.voce ? theme.accent : 'transparent' }}>
-                {form.voce && <Check size={12} color={theme.accentFg} />}
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                Roluri <span className="normal-case font-normal">(selectează unul sau mai multe)</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {ROLURI_LISTA.map((r) => {
+                  const sel = form.roluri.includes(r);
+                  return (
+                    <button key={r} onClick={() => toggleRol(r)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition active:scale-95"
+                      style={sel
+                        ? { backgroundColor: theme.accent, color: theme.accentFg }
+                        : { backgroundColor: theme.bg, color: theme.muted, border: `1px solid ${theme.border}` }}>
+                      {sel && <span className="text-xs">✓</span>}
+                      {r}
+                    </button>
+                  );
+                })}
               </div>
-              <span className="text-sm" style={{ color: theme.text }}>Poate fi voce lead</span>
-            </label>
+              {form.roluri.length === 0 && (
+                <p className="text-xs mt-2" style={{ color: '#f43f5e' }}>Selectează cel puțin un rol.</p>
+              )}
+            </div>
+
             <button onClick={save}
-              className="w-full font-bold py-3 rounded-xl active:scale-95 transition"
+              disabled={!form.nume.trim() || form.roluri.length === 0}
+              className="w-full font-bold py-3 rounded-xl active:scale-95 transition disabled:opacity-40"
               style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
               Salvează
             </button>
