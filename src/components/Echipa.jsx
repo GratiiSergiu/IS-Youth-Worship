@@ -131,7 +131,7 @@ export default function Echipa({ membri, onUpdate }) {
         <div className="fixed inset-0 z-50 flex items-end anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowForm(false)}>
-          <div className="w-full rounded-t-3xl flex flex-col anim-sheet"
+          <div className="w-full rounded-t-3xl flex flex-col anim-sheet overflow-hidden"
             style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '88vh' }}
             onClick={(e) => e.stopPropagation()}>
 
