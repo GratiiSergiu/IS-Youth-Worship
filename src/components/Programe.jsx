@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import { ChevronRight, Music } from 'lucide-react';
+import { ChevronRight, Music, Calendar } from 'lucide-react';
 import SongViewer from './SongViewer';
 
 function formatDate(dateString) {
@@ -10,27 +10,44 @@ function formatDate(dateString) {
 
 export default function Programe({ istoricData, songs, onUpdateSong }) {
   const { theme } = useSettings();
+  const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [viewingSong, setViewingSong] = useState(null);
+
+  // 1. Group programs by name, excluding 'repetitie'
+  const programeGrupate = istoricData
+    .filter(p => !p.nume_eveniment?.toLowerCase().includes('repetitie'))
+    .reduce((acc, program) => {
+      const groupName = program.nume_eveniment;
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(program);
+      // Sort by date descending
+      acc[groupName].sort((a, b) => new Date(b.data_eveniment) - new Date(a.data_eveniment));
+      return acc;
+    }, {});
+  
+  const groupNames = Object.keys(programeGrupate);
+
+  // --- Render Logic ---
 
   if (viewingSong) {
     const { song, program } = viewingSong;
     const songIndex = program.cantari.findIndex(c => c.songId === song.songId);
+    const masterSong = songs.find(s => s.id === song.songId);
 
     const changeKey = (newKey) => {
-      // This is a temporary change for viewing, so we don't update the main istoricData
       const updatedSong = { ...song, selectedKey: newKey };
       setViewingSong({ song: updatedSong, program });
     }
 
-    const masterSong = songs.find(s => s.id === song.songId);
-
     return (
       <SongViewer
-        song={{ ...song, id: song.songId, versuri: masterSong?.versuri ?? song.versuri ?? '' }}
+        song={{ ...song, id: song.songId, versuri: masterSong?.versuri ?? '' }}
         onClose={() => setViewingSong(null)}
         onKeyChange={changeKey}
-        onUpdate={onUpdateSong} // This allows editing the master song from the program view
+        onUpdate={onUpdateSong}
         onNext={() => {
           const nextIndex = songIndex + 1;
           if (nextIndex < program.cantari.length) {
@@ -50,10 +67,11 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
   }
 
   if (selectedProgram) {
+    // View showing songs for a selected date
     return (
       <div className="px-4 pt-2 max-w-md mx-auto">
         <button onClick={() => setSelectedProgram(null)} className="text-sm font-semibold mb-3" style={{ color: theme.accent }}>
-          ‹ Înapoi la listă
+          ‹ Înapoi la date
         </button>
         <div className="space-y-2.5">
           {selectedProgram.cantari.map((item, index) => (
@@ -76,25 +94,51 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
     );
   }
 
-  return (
-    <div className="px-4 pt-2 max-w-md mx-auto">
-      {istoricData.length === 0 ? (
-        <div className="text-center py-16 border-2 border-dashed rounded-2xl m-4" style={{ borderColor: theme.border }}>
-            <Music size={32} className="mx-auto mb-2" style={{ color: theme.border }} />
-            <p className="text-sm" style={{ color: theme.muted }}>Niciun program salvat.<br />Creează unul din secțiunea "Planificare".</p>
-        </div>
-      ) : (
+  if (selectedGroupName) {
+    // View showing dates for a selected program group
+    const programeDinGrup = programeGrupate[selectedGroupName];
+    return (
+      <div className="px-4 pt-2 max-w-md mx-auto">
+        <button onClick={() => setSelectedGroupName(null)} className="text-sm font-semibold mb-3" style={{ color: theme.accent }}>
+          ‹ Înapoi la programe
+        </button>
         <div className="space-y-3">
-          {istoricData.map((program) => (
+          {programeDinGrup.map((program) => (
             <button
               key={program.id}
               onClick={() => setSelectedProgram(program)}
               className="w-full text-left bg-white rounded-xl p-4 border shadow-sm flex items-center justify-between active:scale-95 transition"
               style={{ backgroundColor: theme.surface, borderColor: theme.border }}
             >
-              <div>
-                <p className="font-bold" style={{ color: theme.text }}>{program.nume_eveniment}</p>
-                <p className="text-sm mt-1" style={{ color: theme.muted }}>{formatDate(program.data_eveniment)}</p>
+              <p className="font-bold" style={{ color: theme.text }}>{formatDate(program.data_eveniment)}</p>
+              <ChevronRight size={20} style={{ color: theme.muted }} />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Main view showing the list of program groups
+  return (
+    <div className="px-4 pt-2 max-w-md mx-auto">
+      {groupNames.length === 0 ? (
+        <div className="text-center py-16 border-2 border-dashed rounded-2xl m-4" style={{ borderColor: theme.border }}>
+            <Music size={32} className="mx-auto mb-2" style={{ color: theme.border }} />
+            <p className="text-sm" style={{ color: theme.muted }}>Niciun program salvat.<br />Creează unul din secțiunea "Planificare".</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {groupNames.map((groupName) => (
+            <button
+              key={groupName}
+              onClick={() => setSelectedGroupName(groupName)}
+              className="w-full text-left bg-white rounded-xl p-4 border shadow-sm flex items-center justify-between active:scale-95 transition"
+              style={{ backgroundColor: theme.surface, borderColor: theme.border }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gray-200 rounded-lg" style={{ backgroundColor: theme.accent + '20' }}><Calendar size={16} style={{ color: theme.accent }} /></div>
+                <p className="font-bold" style={{ color: theme.text }}>{groupName}</p>
               </div>
               <ChevronRight size={20} style={{ color: theme.muted }} />
             </button>
