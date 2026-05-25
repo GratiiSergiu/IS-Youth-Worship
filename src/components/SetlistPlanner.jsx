@@ -132,10 +132,6 @@ export default function SetlistPlanner({ songs, setlists, onUpdateSetlists, onUp
             )
           );
         }}
-        onNext={() => setViewingIndex((i) => Math.min(selectedSongs.length - 1, i + 1))}
-        onPrev={() => setViewingIndex((i) => Math.max(0, i - 1))}
-        hasNext={viewingIndex < selectedSongs.length - 1}
-        hasPrev={viewingIndex > 0}
       />
     );
   }

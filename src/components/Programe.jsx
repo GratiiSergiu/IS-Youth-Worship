@@ -34,7 +34,6 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
 
   if (viewingSong) {
     const { song, program } = viewingSong;
-    const songIndex = program.cantari.findIndex(c => c.songId === song.songId);
     const masterSong = songs.find(s => s.id === song.songId);
 
     const changeKey = (newKey) => {
@@ -48,20 +47,6 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
         onClose={() => setViewingSong(null)}
         onKeyChange={changeKey}
         onUpdate={onUpdateSong}
-        onNext={() => {
-          const nextIndex = songIndex + 1;
-          if (nextIndex < program.cantari.length) {
-            setViewingSong({ song: program.cantari[nextIndex], program });
-          }
-        }}
-        onPrev={() => {
-          const prevIndex = songIndex - 1;
-          if (prevIndex >= 0) {
-            setViewingSong({ song: program.cantari[prevIndex], program });
-          }
-        }}
-        hasNext={songIndex < program.cantari.length - 1}
-        hasPrev={songIndex > 0}
       />
     );
   }
