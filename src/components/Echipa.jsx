@@ -154,25 +154,21 @@ export default function Echipa({ membri, onUpdate }) {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end anim-overlay"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 anim-overlay"
           style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
           onClick={closeForm}>
-          <div className="w-full rounded-t-3xl flex flex-col anim-sheet"
-            style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}`, maxHeight: '90vh' }}
+          <div className="w-full max-w-sm rounded-2xl flex flex-col anim-modal"
+            style={{ backgroundColor: theme.surface }}
             onClick={(e) => e.stopPropagation()}>
 
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
-            </div>
-
-            <div className="flex items-center justify-between px-6 pb-3 shrink-0">
+            <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.border }}>
                <p className="font-bold text-base" style={{ color: theme.text }}>
                 {editId ? 'Editează Membru' : 'Adaugă Membru'}
               </p>
               <button onClick={closeForm} className='p-1.5 -mr-1.5 rounded-lg' style={{ color: theme.muted }}><X size={20} /></button>
             </div>
 
-            <div className='px-6 pb-4 space-y-4'>
+            <div className='p-4 space-y-4'>
               <input
                 autoFocus
                 placeholder="Nume complet"
