@@ -50,7 +50,18 @@ function buildChordRow(parts) {
 }
 
 function buildLyricRow(parts) {
-  return parts.filter((p) => p.type === 'text').map((p) => p.content).join('');
+  const textParts = parts.filter((p) => p.type === 'text');
+  let result = '';
+  for (const { content } of textParts) {
+    if (result && content) {
+      const lastChar = result[result.length - 1];
+      const firstChar = content[0];
+      const isPunct = /[\s\-.,;:!?("'„""''»«)\][\\/]/;
+      if (!isPunct.test(lastChar) && !isPunct.test(firstChar)) result += ' ';
+    }
+    result += content;
+  }
+  return result;
 }
 
 // Split rendered lines into sections (groups separated by empty lines)
