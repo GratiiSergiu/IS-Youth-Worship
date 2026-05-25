@@ -75,7 +75,7 @@ export default function Echipa({ membri, onUpdate }) {
   const toggle = (id) => onUpdate(membri.map((m) => m.id === id ? { ...m, activ: !m.activ } : m));
 
   return (
-    <div className="anim-page">
+    <div>
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs uppercase tracking-widest font-bold" style={{ color: theme.muted }}>Membrii echipei</p>
         <button onClick={openAdd}
