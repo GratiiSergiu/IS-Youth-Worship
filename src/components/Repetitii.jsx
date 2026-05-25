@@ -20,7 +20,7 @@ export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
 
   const repetitii = useMemo(() => {
       return istoricData
-          .filter(p => p.nume_eveniment?.toLowerCase().includes('repetitie'))
+          .filter(p => p.nume_eveniment?.toLowerCase().replace('ț','t').replace('ș','s').includes('repetitie'))
           .sort((a,b) => new Date(b.data_eveniment) - new Date(a.data_eveniment));
   }, [istoricData]);
   
@@ -38,7 +38,7 @@ export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
   const addRepetitie = (dateStr) => {
     const newRepetitie = {
       id: crypto.randomUUID(),
-      nume_eveniment: 'Repetiție',
+      nume_eveniment: 'Repetitie',
       data_eveniment: dateStr,
       cantari: [],
       prezenta: []
