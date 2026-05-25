@@ -16,7 +16,7 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
 
   // 1. Group programs by name, excluding 'repetitie'
   const programeGrupate = istoricData
-    .filter(p => !p.nume_eveniment?.toLowerCase().includes('repetitie'))
+    .filter(p => !p.nume_eveniment?.toLowerCase().replace('ț','t').replace('ș','s').includes('repetitie'))
     .reduce((acc, program) => {
       const groupName = program.nume_eveniment;
       if (!acc[groupName]) {
