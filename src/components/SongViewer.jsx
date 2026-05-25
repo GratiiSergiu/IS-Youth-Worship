@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight, Music2, FileText, Pencil, Check, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Music2, FileText, Pencil, Check, X, SlidersHorizontal } from 'lucide-react';
 import { getSemitonesBetween, transposeLyrics, renderLyrics } from '../utils/chords';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -68,7 +68,7 @@ function splitIntoSections(lines) {
   return sections;
 }
 
-export default function SongViewer({ song, onClose, onKeyChange, onUpdate }) {
+export default function SongViewer({ song, onClose, onKeyChange, onUpdate, onAranjamentChange }) {
   const { theme, font, size, settings } = useSettings();
   const [showChords, setShowChords] = useState(true);
   const [currentKey, setCurrentKey] = useState(song.selectedKey || song.originalKey || 'C');
@@ -76,6 +76,8 @@ export default function SongViewer({ song, onClose, onKeyChange, onUpdate }) {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ titlu: song.titlu, autor: song.autor, versuri: song.versuri });
   const [pageIndex, setPageIndex] = useState(0);
+  const [showAranjament, setShowAranjament] = useState(false);
+  const [aranjamentForm, setAranjamentForm] = useState(song.aranjament ?? {});
 
   const originalKey = song.originalKey || currentKey;
   const keyQuality = useMemo(() => detectKeyQuality(song.versuri), [song.versuri]);
@@ -186,6 +188,12 @@ export default function SongViewer({ song, onClose, onKeyChange, onUpdate }) {
                 style={{ color: showChords ? theme.accent : theme.muted }}>
                 {showChords ? <Music2 size={20} /> : <FileText size={20} />}
               </button>
+              {onAranjamentChange && (
+                <button onClick={() => setShowAranjament(true)} className="p-2 transition"
+                  style={{ color: Object.values(aranjamentForm).some(v => v?.trim?.()) ? theme.accent : theme.muted }}>
+                  <SlidersHorizontal size={18} />
+                </button>
+              )}
               {onUpdate && (
                 <button onClick={() => setEditMode(true)} className="p-2 transition" style={{ color: theme.muted }}>
                   <Pencil size={18} />
@@ -258,6 +266,56 @@ export default function SongViewer({ song, onClose, onKeyChange, onUpdate }) {
         </div>
       )}
 
+      {/* Modal Aranjament */}
+      {showAranjament && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setShowAranjament(false)}>
+          <div className="w-full max-w-md rounded-2xl max-h-[80vh] flex flex-col"
+            style={{ backgroundColor: theme.surface, border: `2px solid ${theme.accent}` }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between px-5 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <div>
+                <p className="font-bold text-base" style={{ color: theme.text }}>Aranjament</p>
+                <p className="text-xs mt-0.5" style={{ color: theme.muted }}>{song.titlu}</p>
+              </div>
+              <button onClick={() => setShowAranjament(false)} className="p-2 rounded-xl" style={{ color: theme.muted }}><X size={18} /></button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+              {[
+                { key: 'voceaLead', label: 'Voce Lead', placeholder: 'Numele persoanei' },
+                { key: 'tempo', label: 'Tempo / Ritm', placeholder: 'Ex: 120bpm, 4/4, Baladă' },
+                { key: 'structura', label: 'Structură / Ordine', placeholder: 'Ex: Intro, V1, Ref, Bridge…', multiline: true },
+                { key: 'notite', label: 'Notițe', placeholder: 'Orice alte detalii importante', multiline: true },
+              ].map(({ key, label, placeholder, multiline }) => (
+                <div key={key}>
+                  <label className="text-xs font-semibold uppercase mb-1 block" style={{ color: theme.muted }}>{label}</label>
+                  {multiline ? (
+                    <textarea rows={3} placeholder={placeholder}
+                      value={aranjamentForm[key] ?? ''}
+                      onChange={e => setAranjamentForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="w-full rounded-lg px-3 py-2 focus:outline-none resize-none"
+                      style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }} />
+                  ) : (
+                    <input type="text" placeholder={placeholder}
+                      value={aranjamentForm[key] ?? ''}
+                      onChange={e => setAranjamentForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="w-full rounded-lg px-3 py-2 focus:outline-none"
+                      style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="px-5 py-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+              <button
+                onClick={() => { onAranjamentChange(aranjamentForm); setShowAranjament(false); }}
+                className="w-full font-bold py-3 rounded-xl active:scale-95 transition"
+                style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+                Salvează
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

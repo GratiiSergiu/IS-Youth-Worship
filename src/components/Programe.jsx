@@ -8,7 +8,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('ro-RO', options);
 }
 
-export default function Programe({ istoricData, songs, onUpdateSong }) {
+export default function Programe({ istoricData, songs, onUpdateSong, onUpdateProgram }) {
   const { theme } = useSettings();
   const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -37,9 +37,17 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
     const masterSong = songs.find(s => s.id === song.songId);
 
     const changeKey = (newKey) => {
-      const updatedSong = { ...song, selectedKey: newKey };
-      setViewingSong({ song: updatedSong, program });
-    }
+      setViewingSong({ song: { ...song, selectedKey: newKey }, program });
+    };
+
+    const handleAranjamentChange = async (aranjament) => {
+      const updatedCantari = program.cantari.map(c =>
+        c.songId === song.songId ? { ...c, aranjament } : c
+      );
+      const updatedProgram = { ...program, cantari: updatedCantari };
+      await onUpdateProgram?.(updatedProgram);
+      setViewingSong({ song: { ...song, aranjament }, program: updatedProgram });
+    };
 
     return (
       <SongViewer
@@ -47,6 +55,7 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
         onClose={() => setViewingSong(null)}
         onKeyChange={changeKey}
         onUpdate={onUpdateSong}
+        onAranjamentChange={handleAranjamentChange}
       />
     );
   }
