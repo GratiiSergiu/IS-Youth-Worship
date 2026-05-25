@@ -68,7 +68,7 @@ function splitIntoSections(lines) {
   return sections;
 }
 
-export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, hasPrev, onKeyChange, onUpdate }) {
+export default function SongViewer({ song, onClose, onKeyChange, onUpdate }) {
   const { theme, font, size, settings } = useSettings();
   const [showChords, setShowChords] = useState(true);
   const [currentKey, setCurrentKey] = useState(song.selectedKey || song.originalKey || 'C');
@@ -121,7 +121,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col anim-slide-right" style={{ backgroundColor: theme.bg }}>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: theme.bg }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b shrink-0"
@@ -255,24 +255,6 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
                 : renderLine(line)
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Footer nav (scroll mode) — only in setlist context */}
-      {!editMode && !isPaged && onNext && (
-        <div className="flex justify-between items-center px-4 py-3 border-t shrink-0"
-          style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
-          <button onClick={onPrev} disabled={!hasPrev}
-            className="flex items-center gap-1 text-sm font-medium transition disabled:opacity-30"
-            style={{ color: theme.text }}>
-            <ChevronLeft size={20} /> Anterior
-          </button>
-          <span className="text-xs truncate max-w-[120px]" style={{ color: theme.muted }}>{song.autor}</span>
-          <button onClick={onNext} disabled={!hasNext}
-            className="flex items-center gap-1 text-sm font-medium transition disabled:opacity-30"
-            style={{ color: theme.text }}>
-            Următor <ChevronRight size={20} />
-          </button>
         </div>
       )}
 
