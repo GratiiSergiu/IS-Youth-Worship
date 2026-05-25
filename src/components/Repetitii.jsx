@@ -238,10 +238,11 @@ function StatisticiListView({ repetitii, membri }) {
                         <p className="font-bold" style={{ color: theme.text }}>{membru.nume}</p>
                         <span className="font-bold text-sm" style={{ color: theme.accent }}>{membru.procentaj}%</span>
                     </div>
-                    <div className="text-xs mt-1" style={{ color: theme.muted }}>
-                        <span>Prezent: {membru.prezente}</span>
-                        <span className="mx-2">|</span>
-                        <span>Absent: {membru.absente}</span>
+                    <div className="text-xs mt-1 mb-2" style={{ color: theme.muted }}>
+                        {membru.prezente} din {repetitii.length} repetiții
+                    </div>
+                    <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.border }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${membru.procentaj}%`, backgroundColor: theme.accent }} />
                     </div>
                 </div>
             ))}
