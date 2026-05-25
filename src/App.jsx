@@ -5,7 +5,7 @@ import { supabase } from './supabaseClient';
 import BottomNav from './components/BottomNav';
 import Header from './components/Header';
 import SongList from './components/SongList';
-import SetlistPlanner from './components/SetlistPlanner';
+import Organizare from './components/Organizare';
 import Collections from './components/Collections';
 import Echipa from './components/Echipa';
 import Settings from './components/Settings';
@@ -146,6 +146,15 @@ export default function App() {
     return { error };
   };
 
+  const handleUpdateProgram = async (program) => {
+    const { error } = await supabase
+      .from('Istoric')
+      .update(program)
+      .eq('id', program.id);
+    if (!error) fetchIstoric();
+    return { error };
+  };
+
   const handleUpdateSong = async (updated) => {
     const { id } = updated;
     const { data, error } = await supabase
@@ -200,13 +209,18 @@ export default function App() {
               onUpdateSong={handleUpdateSong}
             />
           )}
-          {activeTab === 'planificare' && (
-            <SetlistPlanner
+          {activeTab === 'organizare' && (
+            <Organizare
               songs={songs}
               setlists={setlists}
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
+              onUpdateProgram={handleUpdateProgram} // Pass the new function
+              istoricData={istoricData}
+              onUpdateIstoric={setIstoricData} // Pass the setter function
+              membri={membri}
+              onUpdateMembri={setMembri}
             />
           )}
           {activeTab === 'echipa' && (
