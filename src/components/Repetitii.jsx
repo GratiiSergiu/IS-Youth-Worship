@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Check, Users, CalendarDays, Plus, ArrowLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Users, CalendarDays, Plus, ArrowLeft, ChevronRight as ChevronRightIcon, ChevronDown } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
 const MONTHS_RO = ['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
@@ -17,6 +17,8 @@ function formatDate(dateString, options = {}) {
 // --- Main Component ---
 export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [istoricOpen, setIstoricOpen] = useState(false);
+  const [statisticiOpen, setStatisticiOpen] = useState(false);
 
   const repetitii = useMemo(() => {
       return istoricData
@@ -61,22 +63,56 @@ export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
 
   return (
     <div className="px-4 pt-3 pb-24 anim-page">
-      <CalendarView 
+      <CalendarView
         repetitiiByDate={repetitiiByDate}
         onSelectDate={handleSelectDate}
       />
-      <div className="mt-6">
-        <h3 className="font-bold text-lg mb-2 flex items-center gap-2" >
-            <CalendarDays size={18} /> Istoric Repetiții
-        </h3>
+      <CollapsibleSection
+        icon={<CalendarDays size={18} />}
+        title="Istoric Repetiții"
+        count={repetitii.length}
+        open={istoricOpen}
+        onToggle={() => setIstoricOpen(o => !o)}
+      >
         <IstoricListView repetitii={repetitii} onSelectDate={handleSelectDate} />
-      </div>
-      <div className="mt-6">
-        <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-            <Users size={18} /> Statistică Prezență
-        </h3>
+      </CollapsibleSection>
+      <CollapsibleSection
+        icon={<Users size={18} />}
+        title="Statistică Prezență"
+        open={statisticiOpen}
+        onToggle={() => setStatisticiOpen(o => !o)}
+      >
         <StatisticiListView repetitii={repetitii} membri={membri} />
-      </div>
+      </CollapsibleSection>
+    </div>
+  );
+}
+
+// --- Collapsible Section ---
+function CollapsibleSection({ icon, title, count, open, onToggle, children }) {
+  const { theme } = useSettings();
+  return (
+    <div className="mt-4 rounded-2xl border overflow-hidden" style={{ borderColor: theme.border, backgroundColor: theme.surface }}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3"
+      >
+        <span className="flex items-center gap-2 font-bold text-base" style={{ color: theme.text }}>
+          <span style={{ color: theme.accent }}>{icon}</span>
+          {title}
+          {count > 0 && (
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: theme.accent + '25', color: theme.accent }}>
+              {count}
+            </span>
+          )}
+        </span>
+        <ChevronDown size={18} style={{ color: theme.muted, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 border-t" style={{ borderColor: theme.border }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
