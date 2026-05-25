@@ -80,16 +80,13 @@ export default function Programe({ istoricData, songs, onUpdateSong }) {
 
         {/* Aranjament modal */}
         {aranjamentSong && (
-          <div className="fixed inset-0 z-50 flex items-end" style={{ backgroundColor: 'rgba(0,0,0,0.65)' }} onClick={() => setAranjamentSong(null)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.65)' }} onClick={() => setAranjamentSong(null)}>
             <div
-              className="w-full rounded-t-3xl max-h-[85vh] flex flex-col"
-              style={{ backgroundColor: theme.surface, borderTop: `2px solid ${theme.accent}` }}
+              className="w-full max-w-md rounded-2xl max-h-[80vh] flex flex-col"
+              style={{ backgroundColor: theme.surface, border: `2px solid ${theme.accent}` }}
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 rounded-full" style={{ backgroundColor: theme.border }} />
-              </div>
-              <div className="flex items-start justify-between px-5 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+              <div className="flex items-start justify-between px-5 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
                 <div>
                   <p className="font-bold text-base" style={{ color: theme.text }}>Aranjament</p>
                   <p className="text-xs mt-0.5" style={{ color: theme.muted }}>{aranjamentSong.titlu}</p>
