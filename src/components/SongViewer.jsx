@@ -255,7 +255,7 @@ export default function SongViewer({ song, onClose, onKeyChange, onUpdate, onAra
         </div>
       ) : (
         /* ── Continuu ── */
-        <div className="flex-1 overflow-y-auto px-5 py-6">
+        <div className="flex-1 overflow-y-auto px-5 py-6 pb-24">
           <div>
             {lines.map((line) => (
               line.parts.length === 0
