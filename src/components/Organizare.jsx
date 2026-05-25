@@ -31,7 +31,7 @@ export default function Organizare(props) {
   const ActiveIcon = TABS.find(t => t.id === activeTab).icon;
 
   return (
-    <div className="anim-page">
+    <div>
       <div className="px-4 pt-3 pb-2 sticky top-0 z-10" style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}`}}>
         <div className="flex items-center gap-2 mb-3">
           <ActiveIcon size={16} style={{ color: theme.accent }}/>
