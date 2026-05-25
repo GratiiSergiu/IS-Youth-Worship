@@ -15,7 +15,7 @@ function formatDate(dateString, options = {}) {
 }
 
 // --- Main Component ---
-export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
+export default function Repetitii({ istoricData, onSaveRepetitie, onUpdatePrezenta, membri }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [istoricOpen, setIstoricOpen] = useState(false);
   const [statisticiOpen, setStatisticiOpen] = useState(false);
@@ -37,26 +37,18 @@ export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
   const handleSelectDate = (date) => setSelectedDate(date);
   const handleBack = () => setSelectedDate(null);
 
-  const addRepetitie = (dateStr) => {
-    const newRepetitie = {
-      id: crypto.randomUUID(),
-      nume_eveniment: 'Repetitie',
-      data_eveniment: dateStr,
-      cantari: [],
-      prezenta: []
-    };
-    onUpdateIstoric([...istoricData, newRepetitie]);
-    handleSelectDate(dateStr); // Open pontaj for the new repetition
+  const addRepetitie = async (dateStr) => {
+    await onSaveRepetitie(dateStr);
+    handleSelectDate(dateStr);
   };
 
   if (selectedDate) {
-    return <PontajView 
+    return <PontajView
       onBack={handleBack}
       date={selectedDate}
       repetitiiByDate={repetitiiByDate}
       membri={membri}
-      istoricData={istoricData}
-      onUpdateIstoric={onUpdateIstoric} 
+      onUpdatePrezenta={onUpdatePrezenta}
       onAddRepetitie={addRepetitie}
     />;
   }
@@ -251,18 +243,17 @@ function StatisticiListView({ repetitii, membri }) {
 }
 
 // --- Pontaj View ---
-function PontajView({ onBack, date, repetitiiByDate, membri, istoricData, onUpdateIstoric, onAddRepetitie }) {
+function PontajView({ onBack, date, repetitiiByDate, membri, onUpdatePrezenta, onAddRepetitie }) {
     const { theme } = useSettings();
     const rep = repetitiiByDate[date];
     const prezenta = rep?.prezenta ?? [];
 
-    const updatePrezenta = (membruId) => {
+    const updatePrezenta = async (membruId) => {
         if (!rep) return;
         const newPrezenta = prezenta.includes(membruId)
             ? prezenta.filter(id => id !== membruId)
             : [...prezenta, membruId];
-        const updatedRep = { ...rep, prezenta: newPrezenta };
-        onUpdateIstoric(istoricData.map(item => item.id === updatedRep.id ? updatedRep : item));
+        await onUpdatePrezenta(rep.id, newPrezenta);
     };
 
     return (

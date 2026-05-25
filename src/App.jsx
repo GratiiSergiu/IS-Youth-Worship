@@ -155,6 +155,25 @@ export default function App() {
     return { error };
   };
 
+  const handleSaveRepetitie = async (dateStr) => {
+    const { data, error } = await supabase
+      .from('Istoric')
+      .insert({ data_eveniment: dateStr, nume_eveniment: 'Repetitie', cantari: [], prezenta: [] })
+      .select()
+      .single();
+    if (!error && data) setIstoricData(prev => [...prev, data]);
+    return { data, error };
+  };
+
+  const handleUpdatePrezenta = async (id, prezenta) => {
+    const { error } = await supabase
+      .from('Istoric')
+      .update({ prezenta })
+      .eq('id', id);
+    if (!error) setIstoricData(prev => prev.map(item => item.id === id ? { ...item, prezenta } : item));
+    return { error };
+  };
+
   const handleUpdateSong = async (updated) => {
     const { id } = updated;
     const { data, error } = await supabase
@@ -216,9 +235,11 @@ export default function App() {
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
-              onUpdateProgram={handleUpdateProgram} // Pass the new function
+              onUpdateProgram={handleUpdateProgram}
               istoricData={istoricData}
-              onUpdateIstoric={setIstoricData} // Pass the setter function
+              onUpdateIstoric={setIstoricData}
+              onSaveRepetitie={handleSaveRepetitie}
+              onUpdatePrezenta={handleUpdatePrezenta}
               membri={membri}
               onUpdateMembri={setMembri}
             />
