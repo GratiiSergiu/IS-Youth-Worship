@@ -123,7 +123,7 @@ export default function SongViewer({ song, onClose, onNext, onPrev, hasNext, has
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col anim-slide-right" style={{ backgroundColor: theme.bg }}>
+    <div className="fixed inset-0 z-[60] flex flex-col anim-slide-right" style={{ backgroundColor: theme.bg }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b shrink-0"
