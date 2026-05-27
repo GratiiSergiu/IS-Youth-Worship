@@ -6,5 +6,12 @@
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait",
-  "icons": []
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
