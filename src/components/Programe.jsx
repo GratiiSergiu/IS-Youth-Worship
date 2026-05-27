@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import { ChevronRight, Music, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronRight, Music, Calendar, ArrowUp, ArrowDown, Send, Check } from 'lucide-react';
 import SongViewer from './SongViewer';
 
 function formatDate(dateString) {
@@ -13,6 +13,7 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
   const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [viewingSong, setViewingSong] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   // 1. Group programs by name, excluding 'repetitie'
   const programeGrupate = istoricData
@@ -61,6 +62,19 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
   }
 
   if (selectedProgram) {
+    const shareProgram = async () => {
+      const dateStr = formatDate(selectedProgram.data_eveniment);
+      const lines = selectedProgram.cantari.map((c, i) => `${i + 1}. ${c.titlu} (${c.selectedKey})`).join('\n');
+      const text = `🎵 ${selectedProgram.nume_eveniment} — ${dateStr}\n\n${lines}`;
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    };
+
     const moveSong = async (index, direction) => {
       const target = index + direction;
       if (target < 0 || target >= selectedProgram.cantari.length) return;
@@ -73,9 +87,16 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
 
     return (
       <div className="px-4 pt-2 max-w-md mx-auto">
-        <button onClick={() => setSelectedProgram(null)} className="text-sm font-semibold mb-3" style={{ color: theme.accent }}>
-          ‹ Înapoi la date
-        </button>
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={() => setSelectedProgram(null)} className="text-sm font-semibold" style={{ color: theme.accent }}>
+            ‹ Înapoi la date
+          </button>
+          <button onClick={shareProgram}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold active:scale-95 transition"
+            style={{ backgroundColor: copied ? '#16a34a' : theme.accent, color: theme.accentFg }}>
+            {copied ? <><Check size={14} /> Copiat!</> : <><Send size={14} /> Trimite</>}
+          </button>
+        </div>
         <div className="space-y-2.5">
           {selectedProgram.cantari.map((item, index) => (
             <div key={index} className="rounded-xl p-3 border shadow-sm" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
