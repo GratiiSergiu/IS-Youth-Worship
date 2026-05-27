@@ -37,7 +37,7 @@ export default function App() {
     ];
   });
   const [collections, setCollections] = useLocalStorage('isworship_collections', []);
-  const [membri, setMembri] = useLocalStorage('isworship_membri', []);
+  const [membri, setMembri] = useState([]);
   const [istoricData, setIstoricData] = useState([]);
   const { theme } = useSettings();
 
@@ -81,6 +81,22 @@ export default function App() {
     if (data) setIstoricData(data);
   }, []);
 
+  const fetchMembri = useCallback(async () => {
+    const { data } = await supabase
+      .from('config')
+      .select('value')
+      .eq('key', 'membri')
+      .single();
+    if (data) setMembri(data.value ?? []);
+  }, []);
+
+  const handleUpdateMembri = async (newMembri) => {
+    setMembri(newMembri);
+    await supabase
+      .from('config')
+      .upsert({ key: 'membri', value: newMembri });
+  };
+
   // ── One-time migration: localStorage → Supabase ───────────────────────────
   useEffect(() => {
     const migrate = async () => {
@@ -106,11 +122,13 @@ export default function App() {
   useEffect(() => {
     fetchSongs();
     fetchIstoric();
+    fetchMembri();
 
     const channel = supabase
       .channel('app-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Cântări' }, fetchSongs)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Istoric' }, fetchIstoric)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, fetchMembri)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -250,14 +268,14 @@ export default function App() {
               onSaveRepetitie={handleSaveRepetitie}
               onUpdatePrezenta={handleUpdatePrezenta}
               membri={membri}
-              onUpdateMembri={setMembri}
+              onUpdateMembri={handleUpdateMembri}
               isAdmin={isAdmin}
             />
           )}
           {activeTab === 'echipa' && (
             <Echipa
               membri={membri}
-              onUpdate={setMembri}
+              onUpdate={handleUpdateMembri}
               isAdmin={isAdmin}
             />
           )}
