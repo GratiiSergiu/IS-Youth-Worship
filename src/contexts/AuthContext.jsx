@@ -45,6 +45,12 @@ export function AuthProvider({ children }) {
   const signInWithPassword = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
 
+  const signInWithGoogle = () =>
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -67,7 +73,7 @@ export function AuthProvider({ children }) {
   const isAdmin = profile?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, profile, isAdmin, loading, signIn, signInWithPassword, signOut, updateUserRole, fetchAllProfiles }}>
+    <AuthContext.Provider value={{ user, profile, isAdmin, loading, signIn, signInWithPassword, signInWithGoogle, signOut, updateUserRole, fetchAllProfiles }}>
       {children}
     </AuthContext.Provider>
   );
