@@ -8,7 +8,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('ro-RO', options);
 }
 
-export default function Programe({ istoricData, songs, onUpdateSong, onUpdateProgram }) {
+export default function Programe({ istoricData, songs, onUpdateSong, onUpdateProgram, isAdmin = false }) {
   const { theme } = useSettings();
   const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -110,18 +110,20 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
                     <ChevronRight size={14} className="shrink-0" style={{ color: theme.muted }} />
                   </div>
                 </button>
-                <div className="flex flex-col gap-0.5 shrink-0">
-                  <button onClick={() => moveSong(index, -1)} disabled={index === 0}
-                    className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
-                    style={{ backgroundColor: theme.bg, color: theme.muted }}>
-                    <ArrowUp size={14} />
-                  </button>
-                  <button onClick={() => moveSong(index, 1)} disabled={index === selectedProgram.cantari.length - 1}
-                    className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
-                    style={{ backgroundColor: theme.bg, color: theme.muted }}>
-                    <ArrowDown size={14} />
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="flex flex-col gap-0.5 shrink-0">
+                    <button onClick={() => moveSong(index, -1)} disabled={index === 0}
+                      className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
+                      style={{ backgroundColor: theme.bg, color: theme.muted }}>
+                      <ArrowUp size={14} />
+                    </button>
+                    <button onClick={() => moveSong(index, 1)} disabled={index === selectedProgram.cantari.length - 1}
+                      className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
+                      style={{ backgroundColor: theme.bg, color: theme.muted }}>
+                      <ArrowDown size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
