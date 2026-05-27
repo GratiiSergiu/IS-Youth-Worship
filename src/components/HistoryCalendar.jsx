@@ -12,7 +12,7 @@ function toDateStr(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function HistoryCalendar({ songs, istoricData, onDeleteProgram }) {
+export default function HistoryCalendar({ songs, istoricData, onDeleteProgram, isAdmin = false }) {
   const { theme } = useSettings();
   const today = new Date();
 
@@ -392,23 +392,25 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram })
                     <p className="font-bold text-sm" style={{ color: theme.accent }}>
                       {entry.nume_eveniment || 'Program'}
                     </p>
-                    <button
-                      onClick={async () => {
-                        if (!window.confirm('Ștergi acest program? Acțiunea nu poate fi anulată.')) return;
-                        setDeletingId(entry.id);
-                        await onDeleteProgram(entry.id);
-                        setDeletingId(null);
-                        const remaining = selectedDay.entries.filter((_, i) => i !== ei);
-                        if (remaining.length === 0) setSelectedDay(null);
-                        else setSelectedDay({ ...selectedDay, entries: remaining });
-                      }}
-                      disabled={deletingId === entry.id}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition active:scale-95 disabled:opacity-50"
-                      style={{ backgroundColor: '#ef444420', color: '#ef4444' }}
-                    >
-                      <Trash2 size={13} />
-                      {deletingId === entry.id ? 'Se șterge…' : 'Șterge'}
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Ștergi acest program? Acțiunea nu poate fi anulată.')) return;
+                          setDeletingId(entry.id);
+                          await onDeleteProgram(entry.id);
+                          setDeletingId(null);
+                          const remaining = selectedDay.entries.filter((_, i) => i !== ei);
+                          if (remaining.length === 0) setSelectedDay(null);
+                          else setSelectedDay({ ...selectedDay, entries: remaining });
+                        }}
+                        disabled={deletingId === entry.id}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition active:scale-95 disabled:opacity-50"
+                        style={{ backgroundColor: '#ef444420', color: '#ef4444' }}
+                      >
+                        <Trash2 size={13} />
+                        {deletingId === entry.id ? 'Se șterge…' : 'Șterge'}
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     {(entry.cantari ?? []).map((c, ci) => (

@@ -8,7 +8,7 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('ro-RO', options);
 }
 
-export default function Programe({ istoricData, songs, onUpdateSong }) {
+export default function Programe({ istoricData, songs, onUpdateSong, isAdmin = false }) {
   const { theme } = useSettings();
   const [selectedGroupName, setSelectedGroupName] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);

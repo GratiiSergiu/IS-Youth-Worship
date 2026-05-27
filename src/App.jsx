@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useSettings } from './contexts/SettingsContext';
+import { useAuth } from './contexts/AuthContext';
 import { supabase } from './supabaseClient';
 import BottomNav from './components/BottomNav';
 import Header from './components/Header';
@@ -11,8 +12,10 @@ import Echipa from './components/Echipa';
 import Settings from './components/Settings';
 import HistoryCalendar from './components/HistoryCalendar';
 import SplashScreen from './components/SplashScreen';
+import LoginScreen from './components/LoginScreen';
 
 export default function App() {
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('repertoriu');
   const [showSettings, setShowSettings] = useState(false);
   const [songs, setSongs] = useState([]);
@@ -167,6 +170,10 @@ export default function App() {
     if (data) setSongs((prev) => prev.map((s) => s.id === id ? fromDb(data) : s));
   };
 
+  // ── Auth gate ─────────────────────────────────────────────────────────────
+  if (authLoading) return null;
+  if (!user) return <LoginScreen />;
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
@@ -199,6 +206,7 @@ export default function App() {
               onAdd={handleAddSong}
               onDelete={handleDeleteSong}
               onUpdate={handleUpdateSong}
+              isAdmin={isAdmin}
             />
           )}
           {activeTab === 'colectii' && (
@@ -207,6 +215,7 @@ export default function App() {
               collections={collections}
               onUpdateCollections={setCollections}
               onUpdateSong={handleUpdateSong}
+              isAdmin={isAdmin}
             />
           )}
           {activeTab === 'organizare' && (
@@ -216,17 +225,21 @@ export default function App() {
               onUpdateSetlists={setSetlists}
               onUpdateSong={handleUpdateSong}
               onSaveProgram={handleSaveProgram}
-              onUpdateProgram={handleUpdateProgram} // Pass the new function
+              onUpdateProgram={handleUpdateProgram}
               istoricData={istoricData}
-              onUpdateIstoric={setIstoricData} // Pass the setter function
+              onUpdateIstoric={setIstoricData}
+              onSaveRepetitie={handleSaveRepetitie}
+              onUpdatePrezenta={handleUpdatePrezenta}
               membri={membri}
               onUpdateMembri={setMembri}
+              isAdmin={isAdmin}
             />
           )}
           {activeTab === 'echipa' && (
             <Echipa
               membri={membri}
               onUpdate={setMembri}
+              isAdmin={isAdmin}
             />
           )}
           {activeTab === 'istoric' && (
@@ -234,6 +247,7 @@ export default function App() {
               songs={songs}
               istoricData={istoricData}
               onDeleteProgram={handleDeleteProgram}
+              isAdmin={isAdmin}
             />
           )}
         </div>

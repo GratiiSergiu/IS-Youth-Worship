@@ -18,7 +18,7 @@ function firstLetter(titlu) {
   return ch.normalize('NFD').replace(/[̀-ͯ]/g, '') || '#';
 }
 
-export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
+export default function SongList({ songs, onAdd, onDelete, onUpdate, isAdmin = false }) {
   const { theme } = useSettings();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -128,17 +128,19 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
         <h2 className="text-xl font-bold" style={{ color: theme.text }}>Repertoriu</h2>
       </div>
 
-      {/* FAB — floating add button */}
-      <button
-        onClick={toggleForm}
-        className="fixed bottom-24 right-4 z-50 p-4 rounded-full shadow-2xl active:scale-90 transition-transform"
-        style={{ backgroundColor: theme.accent, color: theme.accentFg }}
-      >
-        {showForm ? <X size={22} /> : <Plus size={22} />}
-      </button>
+      {/* FAB — floating add button (admin only) */}
+      {isAdmin && (
+        <button
+          onClick={toggleForm}
+          className="fixed bottom-24 right-4 z-50 p-4 rounded-full shadow-2xl active:scale-90 transition-transform"
+          style={{ backgroundColor: theme.accent, color: theme.accentFg }}
+        >
+          {showForm ? <X size={22} /> : <Plus size={22} />}
+        </button>
+      )}
 
       {/* Add form */}
-      {showForm && (
+      {isAdmin && showForm && (
         <form onSubmit={handleSubmit} className="mx-4 rounded-2xl p-4 mb-4 border space-y-3 shadow-xl"
           style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
           <div className="flex gap-2">
@@ -249,11 +251,13 @@ export default function SongList({ songs, onAdd, onDelete, onUpdate }) {
                         </span>
                       )}
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(song.id); }}
-                      className="p-2 -mr-2 -mt-2 opacity-0 group-hover:opacity-100 transition"
-                      style={{ color: theme.muted }}>
-                      <X size={16} />
-                    </button>
+                    {isAdmin && (
+                      <button onClick={(e) => { e.stopPropagation(); onDelete(song.id); }}
+                        className="p-2 -mr-2 -mt-2 opacity-0 group-hover:opacity-100 transition"
+                        style={{ color: theme.muted }}>
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
                 );
               })}

@@ -1,11 +1,33 @@
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, LogOut, Users, Crown, Eye } from 'lucide-react';
 import { useSettings, THEMES, FONTS, FONT_SIZES } from '../contexts/SettingsContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const PALETTE_IDS = ['ocean', 'forest', 'sunset', 'lavender', 'rose'];
 const BASE_IDS    = ['light', 'dark'];
 
 export default function Settings({ onClose }) {
   const { settings, update, theme } = useSettings();
+  const { user, profile, isAdmin, signOut, updateUserRole, fetchAllProfiles } = useAuth();
+  const [profiles, setProfiles] = useState([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(false);
+  const [usersOpen, setUsersOpen] = useState(false);
+
+  useEffect(() => {
+    if (usersOpen && isAdmin) {
+      setLoadingProfiles(true);
+      fetchAllProfiles().then(({ data }) => {
+        setProfiles(data ?? []);
+        setLoadingProfiles(false);
+      });
+    }
+  }, [usersOpen, isAdmin]);
+
+  const toggleRole = async (userId, currentRole) => {
+    const newRole = currentRole === 'admin' ? 'viewer' : 'admin';
+    await updateUserRole(userId, newRole);
+    setProfiles(prev => prev.map(p => p.id === userId ? { ...p, role: newRole } : p));
+  };
 
   const btn = (active) => ({
     backgroundColor: active ? theme.accent : theme.surface,
@@ -21,6 +43,25 @@ export default function Settings({ onClose }) {
         <h2 className="font-bold text-lg" style={{ color: theme.text }}>Setări</h2>
         <button onClick={onClose} className="p-2 -mr-2" style={{ color: theme.muted }}>
           <X size={24} />
+        </button>
+      </div>
+
+      {/* Account */}
+      <div className="px-4 py-3 border-b shrink-0 flex items-center justify-between" style={{ borderColor: theme.border }}>
+        <div>
+          <p className="text-xs font-semibold" style={{ color: theme.muted }}>Autentificat ca</p>
+          <p className="text-sm font-bold truncate max-w-[220px]" style={{ color: theme.text }}>{user?.email}</p>
+          {profile?.role && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: theme.accent + '25', color: theme.accent }}>
+              {profile.role === 'admin' ? 'Admin' : 'Vizitator'}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={async () => { await signOut(); onClose(); }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold active:scale-95 transition"
+          style={{ backgroundColor: '#ef444420', color: '#ef4444' }}>
+          <LogOut size={15} /> Ieși
         </button>
       </div>
 
@@ -146,6 +187,46 @@ export default function Settings({ onClose }) {
             })}
           </div>
         </section>
+
+        {/* ── Utilizatori (admin only) ── */}
+        {isAdmin && (
+          <section>
+            <button
+              onClick={() => setUsersOpen(o => !o)}
+              className="w-full flex items-center justify-between py-2">
+              <p className="text-xs uppercase tracking-widest font-semibold flex items-center gap-2" style={{ color: theme.muted }}>
+                <Users size={14} /> Utilizatori
+              </p>
+              <span className="text-xs" style={{ color: theme.muted }}>{usersOpen ? '▲' : '▼'}</span>
+            </button>
+
+            {usersOpen && (
+              <div className="space-y-2 mt-2">
+                {loadingProfiles ? (
+                  <p className="text-sm text-center py-4" style={{ color: theme.muted }}>Se încarcă…</p>
+                ) : profiles.map(p => (
+                  <div key={p.id} className="flex items-center justify-between p-3 rounded-xl border"
+                    style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+                    <div>
+                      <p className="text-sm font-semibold truncate max-w-[180px]" style={{ color: theme.text }}>{p.email}</p>
+                      <span className="text-[10px] font-bold" style={{ color: theme.muted }}>
+                        {p.role === 'admin' ? 'Admin' : 'Vizitator'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => toggleRole(p.id, p.role)}
+                      disabled={p.id === user?.id}
+                      className="p-2 rounded-xl transition disabled:opacity-30 active:scale-90"
+                      title={p.role === 'admin' ? 'Retrogradează la Vizitator' : 'Promovează la Admin'}
+                      style={{ backgroundColor: theme.bg, color: p.role === 'admin' ? theme.accent : theme.muted }}>
+                      {p.role === 'admin' ? <Crown size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
       </div>
     </div>

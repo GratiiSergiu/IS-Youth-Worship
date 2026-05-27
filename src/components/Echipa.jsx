@@ -29,7 +29,7 @@ function primaryIcon(roluri = []) {
   return Music2;
 }
 
-export default function Echipa({ membri, onUpdate }) {
+export default function Echipa({ membri, onUpdate, isAdmin = false }) {
   const { theme } = useSettings();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -78,11 +78,13 @@ export default function Echipa({ membri, onUpdate }) {
     <div className="px-4 pt-3 pb-24">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs uppercase tracking-widest font-bold" style={{ color: theme.muted }}>Membrii echipei</p>
-        <button onClick={openAdd}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold active:scale-95 transition"
-          style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
-          <Plus size={13} /> Adaugă
-        </button>
+        {isAdmin && (
+          <button onClick={openAdd}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold active:scale-95 transition"
+            style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+            <Plus size={13} /> Adaugă
+          </button>
+        )}
       </div>
 
       {membri.length === 0 && (
@@ -116,19 +118,21 @@ export default function Echipa({ membri, onUpdate }) {
                     {roluri.length === 0 && <span className="text-[10px]" style={{color: theme.muted}}>Fără rol</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                   <button onClick={() => setEditingRolesFor(isEditingRoles ? null : m.id)} className={"p-1.5 rounded-lg " + (isEditingRoles ? 'bg-gray-200' : '')} style={{ color: theme.muted }}>
-                    <ChevronDown size={15} className={"transition " + (isEditingRoles ? 'rotate-180' : '')}/>
-                  </button>
-                  <button onClick={() => openEdit(m)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
-                    <Pencil size={13} />
-                  </button>
-                  <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg" style={{ color: '#f43f5e' }}>
-                    <X size={13} />
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => setEditingRolesFor(isEditingRoles ? null : m.id)} className={"p-1.5 rounded-lg " + (isEditingRoles ? 'bg-gray-200' : '')} style={{ color: theme.muted }}>
+                      <ChevronDown size={15} className={"transition " + (isEditingRoles ? 'rotate-180' : '')}/>
+                    </button>
+                    <button onClick={() => openEdit(m)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
+                      <Pencil size={13} />
+                    </button>
+                    <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg" style={{ color: '#f43f5e' }}>
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
               </div>
-              {isEditingRoles && (
+              {isAdmin && isEditingRoles && (
                 <div className="px-3 space-y-2">
                    {ROLURI_LISTA.map((r) => {
                         const sel = m.roluri.includes(r);

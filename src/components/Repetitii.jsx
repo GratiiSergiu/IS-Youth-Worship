@@ -15,7 +15,7 @@ function formatDate(dateString, options = {}) {
 }
 
 // --- Main Component ---
-export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
+export default function Repetitii({ istoricData, onUpdateIstoric, membri, isAdmin = false }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const repetitii = useMemo(() => {
@@ -48,14 +48,15 @@ export default function Repetitii({ istoricData, onUpdateIstoric, membri }) {
   };
 
   if (selectedDate) {
-    return <PontajView 
+    return <PontajView
       onBack={handleBack}
       date={selectedDate}
       repetitiiByDate={repetitiiByDate}
       membri={membri}
       istoricData={istoricData}
-      onUpdateIstoric={onUpdateIstoric} 
+      onUpdateIstoric={onUpdateIstoric}
       onAddRepetitie={addRepetitie}
+      isAdmin={isAdmin}
     />;
   }
 
@@ -214,7 +215,7 @@ function StatisticiListView({ repetitii, membri }) {
 }
 
 // --- Pontaj View ---
-function PontajView({ onBack, date, repetitiiByDate, membri, istoricData, onUpdateIstoric, onAddRepetitie }) {
+function PontajView({ onBack, date, repetitiiByDate, membri, istoricData, onUpdateIstoric, onAddRepetitie, isAdmin = false }) {
     const { theme } = useSettings();
     const rep = repetitiiByDate[date];
     const prezenta = rep?.prezenta ?? [];
@@ -237,19 +238,25 @@ function PontajView({ onBack, date, repetitiiByDate, membri, istoricData, onUpda
             <p className="text-sm mb-4" style={{color: theme.muted}}>{rep ? "Bifează membrii prezenți la repetiție." : "Nu există o repetiție pentru această zi."}</p>
 
             {!rep ? (
-               <button onClick={() => onAddRepetitie(date)}
-                className="w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl active:scale-95 transition"
-                style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
-                <Plus size={16} /> Creează repetiție
-              </button>
+              isAdmin ? (
+                <button onClick={() => onAddRepetitie(date)}
+                  className="w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl active:scale-95 transition"
+                  style={{ backgroundColor: theme.accent, color: theme.accentFg }}>
+                  <Plus size={16} /> Creează repetiție
+                </button>
+              ) : (
+                <div className="text-center py-8 border-2 border-dashed rounded-2xl" style={{ borderColor: theme.border }}>
+                  <p className="text-sm" style={{ color: theme.muted }}>Nu există o repetiție pentru această zi.</p>
+                </div>
+              )
             ) : (
               membri.length > 0 ? (
                 <div className="space-y-2">
                     {membri.map(membru => (
-                    <label key={membru.id} 
-                        className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition"
+                    <label key={membru.id}
+                        className={"flex items-center gap-3 p-3 rounded-lg transition " + (isAdmin ? 'cursor-pointer' : 'cursor-default')}
                         style={{ backgroundColor: prezenta.includes(membru.id) ? theme.accent + '20' : theme.bg, border: `1px solid ${prezenta.includes(membru.id) ? theme.accent + '40' : theme.border}`}}
-                        onClick={() => updatePrezenta(membru.id)}
+                        onClick={() => isAdmin && updatePrezenta(membru.id)}
                     >
                         <div className="w-5 h-5 rounded-md border flex items-center justify-center transition"
                         style={{ borderColor: prezenta.includes(membru.id) ? theme.accent : theme.muted, backgroundColor: prezenta.includes(membru.id) ? theme.accent : 'transparent' }}

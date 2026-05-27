@@ -9,7 +9,7 @@ function genId() {
 
 const EMOJIS = ['🎵', '✝️', '🌸', '⭐', '🙏', '🎄', '🎉', '🕊️', '🔥', '💛', '🌿', '🎺'];
 
-export default function Collections({ songs, collections, onUpdateCollections, onUpdateSong }) {
+export default function Collections({ songs, collections, onUpdateCollections, onUpdateSong, isAdmin = false }) {
   const { theme } = useSettings();
   const [activeId, setActiveId] = useState(null);
   const [viewingIndex, setViewingIndex] = useState(null);
@@ -77,21 +77,25 @@ export default function Collections({ songs, collections, onUpdateCollections, o
         </h2>
 
         <div className="rounded-2xl p-4 border mb-4" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-          <label className="text-xs uppercase tracking-wider font-semibold mb-1.5 block" style={{ color: theme.muted }}>
-            Adaugă din repertoriu
-          </label>
-          <select
-            className="w-full rounded-xl px-3 py-2.5 focus:outline-none"
-            style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
-            onChange={(e) => { if (e.target.value) { addSong(e.target.value); e.target.value = ''; } }}
-            defaultValue=""
-          >
-            <option value="" disabled>-- Selectează cântare --</option>
-            {available.length === 0 && <option disabled>Toate cântările sunt adăugate</option>}
-            {available.map((s) => (
-              <option key={s.id} value={s.id}>{s.titlu}</option>
-            ))}
-          </select>
+          {isAdmin && (
+            <>
+              <label className="text-xs uppercase tracking-wider font-semibold mb-1.5 block" style={{ color: theme.muted }}>
+                Adaugă din repertoriu
+              </label>
+              <select
+                className="w-full rounded-xl px-3 py-2.5 focus:outline-none"
+                style={{ backgroundColor: theme.bg, color: theme.text, border: `1px solid ${theme.border}` }}
+                onChange={(e) => { if (e.target.value) { addSong(e.target.value); e.target.value = ''; } }}
+                defaultValue=""
+              >
+                <option value="" disabled>-- Selectează cântare --</option>
+                {available.length === 0 && <option disabled>Toate cântările sunt adăugate</option>}
+                {available.map((s) => (
+                  <option key={s.id} value={s.id}>{s.titlu}</option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -110,9 +114,11 @@ export default function Collections({ songs, collections, onUpdateCollections, o
               <span className="text-sm font-mono font-bold px-2 py-1 rounded-lg" style={{ backgroundColor: theme.bg, color: theme.chord }}>
                 {song.tonalitate}
               </span>
-              <button onClick={() => removeSong(song.id)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
-                <X size={16} />
-              </button>
+              {isAdmin && (
+                <button onClick={() => removeSong(song.id)} className="p-1.5 rounded-lg" style={{ color: theme.muted }}>
+                  <X size={16} />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -128,13 +134,15 @@ export default function Collections({ songs, collections, onUpdateCollections, o
       <div className="grid grid-cols-2 gap-3 mb-4">
         {collections.map((col) => (
           <div key={col.id} className="relative rounded-2xl border p-4" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-            <button
-              onClick={() => deleteCollection(col.id)}
-              className="absolute top-2 right-2 p-1.5 rounded-full"
-              style={{ color: theme.muted }}
-            >
-              <Trash2 size={12} />
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => deleteCollection(col.id)}
+                className="absolute top-2 right-2 p-1.5 rounded-full"
+                style={{ color: theme.muted }}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
             <button className="w-full text-left" onClick={() => setActiveId(col.id)}>
               <div className="text-3xl mb-2">{col.emoji}</div>
               <p className="font-bold truncate pr-4" style={{ color: theme.text }}>{col.name}</p>
@@ -145,7 +153,7 @@ export default function Collections({ songs, collections, onUpdateCollections, o
           </div>
         ))}
 
-        {!addingCol && (
+        {isAdmin && !addingCol && (
           <button
             onClick={() => setAddingCol(true)}
             className="rounded-2xl border-2 border-dashed p-4 flex flex-col items-center justify-center gap-2 transition"
