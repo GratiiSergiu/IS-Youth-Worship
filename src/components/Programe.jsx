@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import { ChevronRight, Music, Calendar } from 'lucide-react';
+import { ChevronRight, Music, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
 import SongViewer from './SongViewer';
 
 function formatDate(dateString) {
@@ -61,7 +61,16 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
   }
 
   if (selectedProgram) {
-    // View showing songs for a selected date
+    const moveSong = async (index, direction) => {
+      const target = index + direction;
+      if (target < 0 || target >= selectedProgram.cantari.length) return;
+      const newCantari = [...selectedProgram.cantari];
+      [newCantari[index], newCantari[target]] = [newCantari[target], newCantari[index]];
+      const updatedProgram = { ...selectedProgram, cantari: newCantari };
+      setSelectedProgram(updatedProgram);
+      await onUpdateProgram?.(updatedProgram);
+    };
+
     return (
       <div className="px-4 pt-2 max-w-md mx-auto">
         <button onClick={() => setSelectedProgram(null)} className="text-sm font-semibold mb-3" style={{ color: theme.accent }}>
@@ -80,6 +89,18 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
                     <ChevronRight size={14} className="shrink-0" style={{ color: theme.muted }} />
                   </div>
                 </button>
+                <div className="flex flex-col gap-0.5 shrink-0">
+                  <button onClick={() => moveSong(index, -1)} disabled={index === 0}
+                    className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
+                    style={{ backgroundColor: theme.bg, color: theme.muted }}>
+                    <ArrowUp size={14} />
+                  </button>
+                  <button onClick={() => moveSong(index, 1)} disabled={index === selectedProgram.cantari.length - 1}
+                    className="p-1 rounded-lg disabled:opacity-25 active:scale-90 transition"
+                    style={{ backgroundColor: theme.bg, color: theme.muted }}>
+                    <ArrowDown size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
