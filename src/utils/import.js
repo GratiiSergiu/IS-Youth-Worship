@@ -112,8 +112,15 @@ function detectKeyFromLyrics(lyrics) {
 
 function cleanTitle(raw) {
   if (!raw) return '';
-  // Strip trailing key-selector tokens (e.g. "G C C# Db D ..." appended by site UI)
   return raw.replace(/(\s+[A-G][#b]?){2,}\s*$/, '').trim();
+}
+
+function extractTitle(el, fallback) {
+  if (!el) return cleanTitle(fallback || '');
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('select, option, input, button, span, div').forEach(e => e.remove());
+  const fromEl = clone.textContent.trim();
+  return cleanTitle(fromEl || fallback || '');
 }
 
 // ─── melodia.ro parser ───────────────────────────────────────────────────────
@@ -145,10 +152,7 @@ function parseMelodiaSection(sectionEl) {
 }
 
 function parseMelodiaRo(doc) {
-  const title = cleanTitle(
-    doc.querySelector('h1')?.textContent?.trim() ||
-    doc.title.split(/[|\-–]/)[0].trim()
-  );
+  const title = extractTitle(doc.querySelector('h1'), doc.title.split(/[|\-–]/)[0].trim());
 
   const author =
     doc.querySelector('.artist, .author, .artist-name, [class*="artist"], [class*="author"]')
@@ -164,10 +168,7 @@ function parseMelodiaRo(doc) {
 
 // ─── resursecrestine.ro parser ────────────────────────────────────────────────
 function parseResurseCrestine(doc) {
-  const title = cleanTitle(
-    doc.querySelector('h1, .song-title, .entry-title')?.textContent?.trim() ||
-    doc.title.split(/[|\-–]/)[0].trim()
-  );
+  const title = extractTitle(doc.querySelector('h1, .song-title, .entry-title'), doc.title.split(/[|\-–]/)[0].trim());
 
   const author =
     doc.querySelector('.author, .artist, .entry-author')?.textContent?.trim() || '';
@@ -184,8 +185,7 @@ function parseResurseCrestine(doc) {
 
 // ─── generic fallback ─────────────────────────────────────────────────────────
 function parseGeneric(doc) {
-  let title = cleanTitle(doc.querySelector('h1')?.textContent?.trim() || '');
-  if (!title) title = cleanTitle(doc.title.split(/[|\-–]/)[0].trim());
+  let title = extractTitle(doc.querySelector('h1'), doc.title.split(/[|\-–]/)[0].trim());
 
   const author =
     doc.querySelector('.author, .artist, [itemprop="byArtist"], .song-author, .performer')
