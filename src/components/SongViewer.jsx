@@ -50,7 +50,16 @@ function buildChordRow(parts) {
 }
 
 function buildLyricRow(parts) {
-  return parts.filter((p) => p.type === 'text').map((p) => p.content).join('');
+  let result = '';
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (p.type !== 'text') continue;
+    if (result.length > 0 && !result.endsWith(' ') && !p.content.startsWith(' ') && parts[i - 1]?.type === 'chord') {
+      result += ' ';
+    }
+    result += p.content;
+  }
+  return result;
 }
 
 // Split rendered lines into sections (groups separated by empty lines)
