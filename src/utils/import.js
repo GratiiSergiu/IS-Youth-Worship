@@ -110,6 +110,12 @@ function detectKeyFromLyrics(lyrics) {
   return normalizeKey(match[1]);
 }
 
+function cleanTitle(raw) {
+  if (!raw) return '';
+  // Strip trailing key-selector tokens (e.g. "G C C# Db D ..." appended by site UI)
+  return raw.replace(/(\s+[A-G][#b]?){2,}\s*$/, '').trim();
+}
+
 // ─── melodia.ro parser ───────────────────────────────────────────────────────
 // Structure: <div class="with-chords verse">
 //   <div class="chord">Fm</div>"text node"<div class="chord">Db</div>"text"...<br>
@@ -139,9 +145,10 @@ function parseMelodiaSection(sectionEl) {
 }
 
 function parseMelodiaRo(doc) {
-  const title =
+  const title = cleanTitle(
     doc.querySelector('h1')?.textContent?.trim() ||
-    doc.title.split(/[|\-–]/)[0].trim();
+    doc.title.split(/[|\-–]/)[0].trim()
+  );
 
   const author =
     doc.querySelector('.artist, .author, .artist-name, [class*="artist"], [class*="author"]')
@@ -157,9 +164,10 @@ function parseMelodiaRo(doc) {
 
 // ─── resursecrestine.ro parser ────────────────────────────────────────────────
 function parseResurseCrestine(doc) {
-  const title =
+  const title = cleanTitle(
     doc.querySelector('h1, .song-title, .entry-title')?.textContent?.trim() ||
-    doc.title.split(/[|\-–]/)[0].trim();
+    doc.title.split(/[|\-–]/)[0].trim()
+  );
 
   const author =
     doc.querySelector('.author, .artist, .entry-author')?.textContent?.trim() || '';
@@ -176,8 +184,8 @@ function parseResurseCrestine(doc) {
 
 // ─── generic fallback ─────────────────────────────────────────────────────────
 function parseGeneric(doc) {
-  let title = doc.querySelector('h1')?.textContent?.trim() || '';
-  if (!title) title = doc.title.split(/[|\-–]/)[0].trim();
+  let title = cleanTitle(doc.querySelector('h1')?.textContent?.trim() || '');
+  if (!title) title = cleanTitle(doc.title.split(/[|\-–]/)[0].trim());
 
   const author =
     doc.querySelector('.author, .artist, [itemprop="byArtist"], .song-author, .performer')
