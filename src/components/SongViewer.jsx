@@ -54,7 +54,15 @@ function buildLyricRow(parts) {
   for (let i = 0; i < parts.length; i++) {
     const p = parts[i];
     if (p.type !== 'text') continue;
-    if (result.length > 0 && !result.endsWith(' ') && !p.content.startsWith(' ') && parts[i - 1]?.type === 'chord') {
+    // Add space only when next segment starts with uppercase — clear word boundary,
+    // not a mid-word chord like Do[G]amne
+    if (
+      result.length > 0 &&
+      !result.endsWith(' ') &&
+      !p.content.startsWith(' ') &&
+      parts[i - 1]?.type === 'chord' &&
+      /^[A-ZĂÎÂȘȚ]/.test(p.content)
+    ) {
       result += ' ';
     }
     result += p.content;
