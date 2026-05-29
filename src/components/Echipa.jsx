@@ -3,6 +3,9 @@ import { Plus, X, Pencil, Mic2, Music, Music2, Music3, Drumstick, ArrowLeft, Che
 import { useSettings } from '../contexts/SettingsContext';
 
 export const ROLURI_LISTA = [
+  'Leader',
+  'Co-Leader',
+  'Voce',
   'Chitară Acustică',
   'Chitară Electrică',
   'Chitară Bas',
@@ -10,11 +13,12 @@ export const ROLURI_LISTA = [
   'Kajon',
   'Pian',
   'Vioară',
-  'Vocalist',
 ];
 
 const ROLE_ICON = {
-  'Vocalist':         Mic2,
+  'Leader':           Mic2,
+  'Co-Leader':        Mic2,
+  'Voce':             Mic2,
   'Chitară Acustică': Music3,
   'Chitară Electrică':Music3,
   'Chitară Bas':      Music,
