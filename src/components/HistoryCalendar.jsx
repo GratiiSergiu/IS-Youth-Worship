@@ -79,13 +79,11 @@ export default function HistoryCalendar({ songs, istoricData, onDeleteProgram, i
     const top = [...songs]
       .filter(s => counts[s.id])
       .sort((a, b) => counts[b.id] - counts[a.id])
-      .slice(0, 10)
       .map(s => ({ song: s, count: counts[s.id] }));
 
     const rare = [...songs]
       .sort((a, b) => (counts[a.id] || 0) - (counts[b.id] || 0))
       .filter(s => !counts[s.id] || counts[s.id] <= 1)
-      .slice(0, 10)
       .map(s => ({ song: s, count: counts[s.id] || 0 }));
 
     return { top, rare };
