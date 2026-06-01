@@ -38,7 +38,13 @@ export default function Programe({ istoricData, songs, onUpdateSong, onUpdatePro
     const masterSong = songs.find(s => s.id === song.songId);
 
     const changeKey = (newKey) => {
-      setViewingSong({ song: { ...song, selectedKey: newKey }, program });
+      const updatedCantari = program.cantari.map(c =>
+        c.songId === song.songId ? { ...c, selectedKey: newKey } : c
+      );
+      const updatedProgram = { ...program, cantari: updatedCantari };
+      setViewingSong({ song: { ...song, selectedKey: newKey }, program: updatedProgram });
+      setSelectedProgram(updatedProgram);
+      onUpdateProgram?.(updatedProgram);
     };
 
     const handleAranjamentChange = async (aranjament) => {
